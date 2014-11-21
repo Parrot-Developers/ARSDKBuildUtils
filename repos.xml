@@ -1,0 +1,109 @@
+<!--
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+-->
+<!--
+
+   SDK3 Repo declaration :
+   < repo name="repoName" rev="branch/tag/commit/DEV">
+      <postDownloadAction command="command line to execute"/>
+   </repo>
+   External repo declaration :
+   <extrepo url="http://url/to/repo.git" rev="branch/tag/commit">
+   	 <postDownloadAction command="command line to execute"/>
+   </extrepo>
+   WGet file to download/unpack :
+   <webfile url="http://www.site.com/file.tar.gz" storePath="../libName">
+     <postDownloadAction command="command line to execute"/>
+   </webfile>
+   
+   In any type, postDownloadAction is optionnal
+
+   If the branch/tag/commit/DEV part is not provided, master will be used
+
+   If a branch is provided, the build script will ensure that the local repo
+   is on a local branch, tracking the "remote/origin/branch" branch. It will
+   also try to update the branch to the latest revision
+
+   If a tag or a commit sha1 is provided, the build script will ensure that
+   the local repo is correctly on this tag/commit
+
+   If DEV is provided, the script won't touch the repository status (it will
+   still clone it into master if non-existant). This options should only be
+   use by the SDK developers
+
+   In all cases, no checkout/pull actions will be taken if the repository
+   contains local commits, uncommited changes, or anything that might need
+   a merge or a rebase. In this case, the script will fail with an error
+   message
+
+   -->
+
+<repos>
+
+  <!--
+     The ARBuildUtils repo (this one, here) is not included
+     because of different issues with a self-update:
+     - Some scripts are already opened when the update is done
+     and won't change in the python/bash engines
+     - Any local changes (including to this file to select others revisions)
+     will break the build, as the current repo would have changed files
+    -->
+
+  <!-- Utils Repositories -->
+  <repo name="Docs" rev="15bb9e7e7ae2cc77e0021e06c83278848f404fbd"/>
+
+  <!-- SDK Repositories -->
+  <repo name="libARCommands" rev="eacefa298139cd47f581d89d53fcb49cdd2ccef3"/>
+  <repo name="libARDiscovery" rev="9513b2b16f0c611028b5512fa0490a57db67b00d"/>
+  <repo name="libARNetwork" rev="c438172fee17b663daf59e4d2dc73d4db9ec2233"/>
+  <repo name="libARNetworkAL" rev="b58bb9e0a9238321c0125994c48eeb10846a8d23"/>
+  <repo name="libARSAL" rev="e07c52850b40ffde335fdea704339ae76fd6a7ce"/>
+  <repo name="libARStream" rev="a40f8e7f295d1e717bcd93e6e07bd99fcc55e511"/>
+  <repo name="libARMedia" rev="941bd3eeff4d2b01227e2d519b81dc24f1c2111c"/>
+  <repo name="libARUtils" rev="91263846ef228e2a0273f5c032658d3858b8823c"/>
+  <repo name="libARUpdater" rev="88c42924e30f6a5837d8af6e0d6fbae27e191f8f"/>
+  <repo name="libARDataTransfer" rev="88a311ac72b54a7eeac835304ce46470cfbcf228"/>
+  <repo name="libARMavlink" rev="5e6bed1df931801a502ae9875ae1efad26224448"/>
+
+  <!-- External Repositories -->
+  <extrepo url="https://github.com/bagder/curl.git" rev="curl-7_36_0"/>
+  <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
+    <postDownloadAction command="../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
+  </extrepo>
+
+  <!-- Prebuilt -->
+  <webfile url="http://downloads.sourceforge.net/project/jmdns/jmdns/JmDNS%203.4.1/jmdns-3.4.1.tgz" storePath="../jmdns">
+    <postDownloadAction command="cd lib; jar xf jmdns.jar"/>
+    <postDownloadAction command="cd lib; jar cfm jmdns.jar META-INF/MANIFEST.MF javax/"/>
+  </webfile>
+  <webfile url="https://s3.amazonaws.com/json-c_releases/releases/json-c-0.9.tar.gz" storePath="../json-c"/>
+  <webfile url="http://mirrors.ibiblio.org/pub/mirrors/maven2/org/apache/sanselan/sanselan/0.97-incubator/sanselan-0.97-incubator.jar" storePath="../sanselan"/>
+
+</repos>

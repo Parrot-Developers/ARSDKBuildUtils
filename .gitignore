@@ -1,0 +1,9 @@
+*~
+Ant/
+Build/
+Install/
+/.alreadyLaunched
+*.pyc
+*.log
+.tmpAndroidProcess/
+AndroidStudio/

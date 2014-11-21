@@ -1,0 +1,177 @@
+<!--
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+-->
+<!--
+
+   Library declaration : (names without lib !)
+   <lib name="libraryName">
+   </lib>
+
+   Library dependency :
+   <lib name="libraryName">
+     <dep name="dependencyLibName"/>
+     <prebuiltdep name="prebuiltDependencyLibName"/>
+     <validtar name="Target1"/>
+     ...
+   </lib>
+
+   If a library has no 'validtar' tag, it will be assumed to be available to all targets
+   If one or more 'validtar' tags are provided, the library is assumed to build ONLY for those targets
+
+   'dep' and 'prebuiltdep' tags may have 'validdeptar' tags, similar to 'validtag'.
+   These targets MUST be valid targets for the dep library or prebuilt.
+
+   External libs :
+   <extlib name="libraryName" dir="../Path/To/Configure/Directory"/>
+   External libraries can ONLY depend on other external libraries, as they are parsed
+   before the ARSDK libraries
+
+   All libraries can have extra configure flags
+   <[ext]lib name="MyLib">
+     [<dep .../>]
+     <extraConfigureFlag value="- -without-something"/> *
+     ...
+     <extraConfigureFlag value="CFLAGS=\" -Werror\""/>
+   <[ext]lib/>
+
+   Non-external libraries may have extra files on which the configure rerun depends on
+   This is typically used for libraries with auto generated code
+   '*' can be used as a wildcard for recursive selection of files:
+    - 'Folder/*.ext' will match 'Folder/text.ext' as well as 'Folder/Subfolder/test2.ext'
+   <lib name="MyLib">
+     ...
+     <configureDepFile name="Xml/someFile.py"/>
+     <configureDepFile name="Xml/*.xml"/>
+     ...
+   </lib>
+
+   (*Note : No double dash in xml comments, it breaks the parser)
+   -->
+
+<libraries>
+
+  <lib name="ARSAL">
+  </lib>
+
+  <lib name="ARDiscovery">
+    <dep name="ARSAL"/>
+    <prebuiltdep name="jmdns">
+      <validdeptar name="Android"/>
+    </prebuiltdep>
+    <prebuiltdep name="android-support-v4">
+      <validdeptar name="Android"/>
+    </prebuiltdep>
+  </lib>
+
+  <lib name="ARNetworkAL">
+      <dep name="ARSAL"/>
+  </lib>
+
+  <lib name="ARCommands">
+    <dep name="ARSAL"/>
+    <configureDepFile name="Xml/generateLibARCommands.py"/>
+    <configureDepFile name="Xml/*.xml"/>
+    <extraConfigureFlag value="--enable-debug-commands"/>
+  </lib>
+
+  <lib name="ARNetwork">
+    <dep name="ARNetworkAL"/>
+  </lib>
+
+  <lib name="ARStream">
+    <dep name="ARNetwork"/>
+  </lib>
+
+  <extlib name="curl" path="../curl">
+    <extraConfigureFlag value="--disable-ares"/>
+    <extraConfigureFlag value="--disable-file"/>
+    <extraConfigureFlag value="--disable-ldap"/>
+    <extraConfigureFlag value="--disable-ldaps"/>
+    <extraConfigureFlag value="--disable-rtsp"/>
+    <extraConfigureFlag value="--disable-proxy"/>
+    <extraConfigureFlag value="--disable-dict"/>
+    <extraConfigureFlag value="--disable-telnet"/>
+    <extraConfigureFlag value="--disable-tftp"/>
+    <extraConfigureFlag value="--disable-pop3"/>
+    <extraConfigureFlag value="--disable-imap"/>
+    <extraConfigureFlag value="--disable-smtp"/>
+    <extraConfigureFlag value="--disable-gopher"/>
+    <extraConfigureFlag value="--disable-manual"/>
+    <extraConfigureFlag value="--disable-verbose"/>
+    <extraConfigureFlag value="--disable-sspi"/>
+    <extraConfigureFlag value="--disable-ntlm-wb"/>
+    <extraConfigureFlag value="--disable-tls-srp"/>
+
+    <extraConfigureFlag value="--without-winssl"/>
+    <extraConfigureFlag value="--without-gnutls"/>
+    <extraConfigureFlag value="--without-polarssl"/>
+    <extraConfigureFlag value="--without-cyassl"/>
+    <extraConfigureFlag value="--without-nss"/>
+    <extraConfigureFlag value="--without-axtls"/>
+    <extraConfigureFlag value="--without-ca-bundle"/>
+    <extraConfigureFlag value="--without-libmetalink"/>
+    <extraConfigureFlag value="--without-libssh2"/>
+    <extraConfigureFlag value="--without-librtmp"/>
+    <extraConfigureFlag value="--without-winidn"/>
+
+  </extlib>
+
+  <extlib name="json" path="../json-c/json-c-0.9"/>
+
+  <lib name="ARUtils">
+      <dep name="ARSAL"/>
+      <dep name="curl"/>
+  </lib>
+
+  <lib name="ARDataTransfer">
+      <dep name="ARDiscovery"/>
+      <dep name="ARUtils"/>
+      <dep name="ARSAL"/>
+      <dep name="curl"/>
+  </lib>
+  
+  <lib name="ARUpdater">
+ 	  <dep name="ARDiscovery"/>
+      <dep name="ARSAL"/>
+      <dep name="ARUtils"/>
+      <dep name="ARDataTransfer"/>
+      <dep name="curl"/>
+  </lib>
+
+  <lib name="ARMedia">
+    <dep name="ARSAL"/>
+    <dep name="ARDiscovery"/>
+    <dep name="ARDataTransfer"/>
+    <dep name="json"/>
+    <extraConfigureFlag value="--disable-videoenc"/>
+    <prebuiltdep name="sanselan-0.97-incubator"/>
+  </lib>
+
+</libraries>

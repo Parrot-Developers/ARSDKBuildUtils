@@ -1,0 +1,74 @@
+<!--
+    Copyright (C) 2014 Parrot SA
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the 
+      distribution.
+    * Neither the name of Parrot nor the names
+      of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+-->
+<!--
+
+   Pre built libraries declaration :
+   <prebuilt name="prebuiltName" type="Type" path="../Path/to/copy">
+     <validtar name="Target1"/>
+     ...
+     <validtar name="TargetN"/>
+   </prebuilt>
+
+   Path MUST start with '/' if it refers to an absolute path (even when starting with an environment variable)
+
+   Path can contain %{ENVIRONMENT_VARIABLE}% to refer to an environment variable
+   If the variable is not set, nothing will be done
+
+   Type can be:
+   - jar
+        == 'path' must be a jar file
+        == 'path' is copied to Targets/{target}/Install/jars/release/
+   - header_only
+        == 'path' must be a folder containing all header files
+        == 'path' is copied to Targets/{target}/Install/{libName}/
+   - external_project
+        == 'path' must be a folder containing the external project root
+        == 'path' will be symlinked into ../prebuiltName
+-->
+
+<prebuiltLibs>
+
+  <prebuilt name="jmdns" type="jar" path="../jmdns/lib/jmdns.jar">
+    <validtar name="Android"/>
+  </prebuilt>
+
+  <prebuilt name="android-support-v4" type="jar" path="/%{ANDROID_SDK_PATH}%/extras/android/support/v4/android-support-v4.jar">
+    <validtar name="Android"/>
+  </prebuilt>
+    
+  <prebuilt name="mavlink" type="header_only" path="../mavlink/generated/include/mavlink/">
+  </prebuilt>
+
+  <prebuilt name="sanselan-0.97-incubator" type="jar" path="../sanselan/sanselan-0.97-incubator.jar">
+    <validtar name="Android"/>
+  </prebuilt>
+
+</prebuiltLibs>
