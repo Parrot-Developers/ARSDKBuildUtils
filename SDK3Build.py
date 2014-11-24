@@ -74,6 +74,7 @@ xmlDirs = [ MYDIR ]
 try:
     extraXmlDirs = os.environ['ARSDK_EXTRA_XML_DIRS'].split(':')
     xmlDirs.extend(extraXmlDirs)
+    xmlDirs.remove('')
 except:
     pass
 
