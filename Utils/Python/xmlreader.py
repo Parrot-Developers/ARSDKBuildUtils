@@ -206,8 +206,8 @@ class ARTarget:
             self.alreadyBuiltBinaries.append(lib.name)
     def hasAlreadyBuiltBinary(self, lib):
         return lib.name in self.alreadyBuiltBinaries
-    def addPostbuildScript(self, script):
-        self.postbuildScripts.append({'name':script, 'done':None})
+    def addPostbuildScript(self, script, name):
+        self.postbuildScripts.append({'path':script, 'name':name,  'done':None})
     def describe(self, level=0):
         prefix = ''
         for i in range(0, level):
@@ -215,7 +215,7 @@ class ARTarget:
         ARPrint(prefix + 'ARTarget > Name : ' + self.name)
         ARPrint(prefix + '           Shared Object ext : ' + self.soext)
         for scrinfo in self.postbuildScripts:
-            scr = scrinfo['name']
+            scr = scrinfo['path']
             ARPrint(prefix + '           Postbuild script  : ' + scr) 
     def __str__(self):
         return self.name
@@ -696,7 +696,7 @@ def parseTargetsXmlFile(paths):
                 target = ARTarget(xtarget.attributes['name'].nodeValue, xtarget.attributes['soext'].nodeValue)
             xscrs = xtarget.getElementsByTagName('postbuildscript')
             for xscr in xscrs:
-                target.addPostbuildScript(xscr.attributes['name'].nodeValue)
+                target.addPostbuildScript(os.path.join(root_path, xscr.attributes['name'].nodeValue), xscr.attributes['name'].nodeValue)
 
             if needToAdd:
                 targets.addTarget(target)
@@ -827,3 +827,11 @@ def parseBinariesXmlFile(paths, targets, libraries):
             binaries.addBin(bin)
 
     return binaries
+
+def parseAll(paths):
+    repos = parseRepoXmlFile(paths)
+    targets = parseTargetsXmlFile(paths)
+    prebuilts = parsePrebuiltXmlFile(paths, targets)
+    libraries = parseLibraryXmlFile(paths, targets, prebuilts)
+    binaries = parseBinariesXmlFile(paths, targets, libraries)
+    return (repos, targets, prebuilts, libraries, binaries)

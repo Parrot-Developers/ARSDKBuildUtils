@@ -81,11 +81,7 @@ except:
 #
 # Parse XML
 #
-repos = xmlreader.parseRepoXmlFile(xmlDirs)
-targets = xmlreader.parseTargetsXmlFile(xmlDirs)
-prebuilts = xmlreader.parsePrebuiltXmlFile(xmlDirs, targets)
-libraries = xmlreader.parseLibraryXmlFile(xmlDirs, targets, prebuilts)
-binaries = xmlreader.parseBinariesXmlFile(xmlDirs, targets, libraries)
+(repos, targets, prebuilts, libraries, binaries) = xmlreader.parseAll(xmlDirs)
 
 if DEBUG_MODE:
     ARPrint ('Debug mode enabled : dump XML contents')
@@ -220,9 +216,9 @@ for target in parser.activeTargets:
             ARLog('Unable to build binaries for target %(target)s' % locals())
 
     for scrinfo in target.postbuildScripts:
-        scr = scrinfo['name']
+        scr = scrinfo['path']
         if allOk:
-            if not ARExecute(ARPathFromHere(scr) + ' >/dev/null 2>&1', failOnError=False):
+            if not ARExecute(scr + ' >/dev/null 2>&1', failOnError=False):
                 ARPrint('Error while running ' + scr + '. Run manually to see the output')
                 target.failed = True
                 scrinfo['done'] = False
