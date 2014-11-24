@@ -68,13 +68,23 @@ DEBUG_MODE = False
 ARInitLogFile()
 
 #
+# Get extra xml dirs
+#
+xmlDirs = [ MYDIR ]
+try:
+    extraXmlDirs = os.environ['ARSDK_EXTRA_XML_DIRS'].split(';')
+    xmlDirs.extend(extraXmlDirs)
+except:
+    pass
+
+#
 # Parse XML
 #
-repos = xmlreader.parseRepoXmlFile('%(MYDIR)s/repos.xml' % locals())
-targets = xmlreader.parseTargetsXmlFile('%(MYDIR)s/targets.xml' % locals())
-prebuilts = xmlreader.parsePrebuiltXmlFile('%(MYDIR)s/prebuilt.xml' % locals(), targets)
-libraries = xmlreader.parseLibraryXmlFile('%(MYDIR)s/libraries.xml' % locals(), targets, prebuilts)
-binaries = xmlreader.parseBinariesXmlFile('%(MYDIR)s/binaries.xml' % locals(), targets, libraries)
+repos = xmlreader.parseRepoXmlFile(xmlDirs)
+targets = xmlreader.parseTargetsXmlFile(xmlDirs)
+prebuilts = xmlreader.parsePrebuiltXmlFile(xmlDirs, targets)
+libraries = xmlreader.parseLibraryXmlFile(xmlDirs, targets, prebuilts)
+binaries = xmlreader.parseBinariesXmlFile(xmlDirs, targets, libraries)
 
 if DEBUG_MODE:
     ARPrint ('Debug mode enabled : dump XML contents')

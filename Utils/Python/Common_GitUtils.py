@@ -52,7 +52,8 @@ def checkAllReposUpToDate(repos, MYDIR, failOnError=False):
             repoDir = Chdir(repo.getDir())
             ARExecute('patch -tsNR -p0 < %(patchPath)s' % locals(), failOnError=False)
             repoDir.exit()
-        ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repo.rev + failArg, failOnError=(not repo.ext))
+        failOnError = (not repo.ext) or repo.extra
+        ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repo.rev + failArg, failOnError=failOnError)
         for patch in repo.patches:
             patchPath = ARPathFromHere(patch)
             repoDir = Chdir(repo.getDir())

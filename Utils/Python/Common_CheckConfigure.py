@@ -40,6 +40,7 @@ def Common_CheckConfigure(lib, confdir, makedir, ConfigureArgs, extraConfigureFi
     CONFIGURE  = '%(confdir)s/configure' % locals()
     FAILFILE   = '%(makedir)s/.configure.failed' % locals()
     CONFIG_LOG = '%(makedir)s/config.log' % locals()
+    MAKEFILE   = '%(makedir)s/Makefile' % locals()
 
     # Sanity check
     if not os.path.exists(CONFIGURE):
@@ -55,6 +56,10 @@ def Common_CheckConfigure(lib, confdir, makedir, ConfigureArgs, extraConfigureFi
     # Check if config.log does exist
     elif not os.path.exists(CONFIG_LOG):
         ARLog('Config.log does not exists, run configure')
+        mustRunConfigure = True
+    # Check if Makefile does exist
+    elif not os.path.exists(MAKEFILE):
+        ARLog('Makefile does not exists, run configure')
         mustRunConfigure = True
 
     confCheckFiles = [ CONFIGURE, ARPathFromHere('Utils/Python/ARSDK_PrebuildActions.py') ]

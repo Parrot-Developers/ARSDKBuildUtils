@@ -44,10 +44,11 @@ import posixpath
 
 class ARRepo:
     "Represent a repo of the ARSDK 3"
-    def __init__(self, reponame, revision="master", isExternal=False):
+    def __init__(self, reponame, revision="master", isExternal=False, isExtraRepo=False):
         self.name = reponame
         self.rev = revision
         self.ext = isExternal
+        self.extra = isExtraRepo
         self.patches = []
         self.additionnalCommands = []
     def getDir(self):
@@ -237,14 +238,13 @@ class ARTargetsList:
     def addTarget(self, target):
         if self.contains(target):
             ARPrint('Target %(target)s is already in list' % locals())
-            EXIT(1)
+            raise Exception
         self.list.append(target)
     def getTarget(self, name):
         for tar in self.list:
             if tar.name == name:
                 return tar
-        ARPrint('Target %(name)s does not exist in list' % locals())
-        EXIT(1)
+        raise Exception
     def dump(self):
         ARPrint('TARGETS : {')
         for target in self.list:
@@ -614,176 +614,216 @@ class ARBinariesList:
 # Parsers
 #
 
-def parseRepoXmlFile(path):
-    xfile=open(path, 'r')
-    xdata=xfile.read()
-    xfile.close()
-
-    xmldata = parseString(xdata)
+def parseRepoXmlFile(paths):
 
     repos = ARReposList()
 
-    xrepos = xmldata.getElementsByTagName('repo')
-    for xrepo in xrepos:
-        repo = ARRepo(xrepo.attributes['name'].nodeValue, xrepo.attributes['rev'].nodeValue)
-        xpatches = xrepo.getElementsByTagName('patchFile')
-        for xpatch in xpatches:
-            repo.addPatchFile(xpatch.attributes['path'].nodeValue)
-        xcmds = xrepo.getElementsByTagName('postDownloadAction')
-        for xcmd in xcmds:
-            repo.addCommand(xcmd.attributes['command'].nodeValue)
-        repos.addRepo(repo)
+    for root_path in paths:
+        path = '%(root_path)s/repos.xml' % locals()
 
-    xrepos = xmldata.getElementsByTagName('extrepo')
-    for xrepo in xrepos:
-        repo = ARRepo(xrepo.attributes['url'].nodeValue, xrepo.attributes['rev'].nodeValue, isExternal=True)
-        xpatches = xrepo.getElementsByTagName('patchFile')
-        for xpatch in xpatches:
-            repo.addPatchFile(xpatch.attributes['path'].nodeValue)
-        xcmds = xrepo.getElementsByTagName('postDownloadAction')
-        for xcmd in xcmds:
-            repo.addCommand(xcmd.attributes['command'].nodeValue)
-        repos.addRepo(repo)
+        xfile=open(path, 'r')
+        xdata=xfile.read()
+        xfile.close()
 
-    xrepos = xmldata.getElementsByTagName('webfile')
-    for xrepo in xrepos:
-        webfile = ARWebfile(xrepo.attributes['url'].nodeValue, xrepo.attributes['storePath'].nodeValue)
-        xpatches = xrepo.getElementsByTagName('patchFile')
-        for xpatch in xpatches:
-            webfile.addPatchFile(xpatch.attributes['path'].nodeValue)
-        xcmds = xrepo.getElementsByTagName('postDownloadAction')
-        for xcmd in xcmds:
-            webfile.addCommand(xcmd.attributes['command'].nodeValue)
-        repos.addWebfile(webfile)
+        xmldata = parseString(xdata)
+
+        xrepos = xmldata.getElementsByTagName('repo')
+        for xrepo in xrepos:
+            repo = ARRepo(xrepo.attributes['name'].nodeValue, xrepo.attributes['rev'].nodeValue)
+            xpatches = xrepo.getElementsByTagName('patchFile')
+            for xpatch in xpatches:
+                repo.addPatchFile(xpatch.attributes['path'].nodeValue)
+            xcmds = xrepo.getElementsByTagName('postDownloadAction')
+            for xcmd in xcmds:
+                repo.addCommand(xcmd.attributes['command'].nodeValue)
+            repos.addRepo(repo)
+
+        xrepos = xmldata.getElementsByTagName('extrarepo')
+        for xrepo in xrepos:
+            repo = ARRepo(xrepo.attributes['url'].nodeValue, xrepo.attributes['rev'].nodeValue, isExternal=True, isExtraRepo=True)
+            xpatches = xrepo.getElementsByTagName('patchFile')
+            for xpatch in xpatches:
+                repo.addPatchFile(xpatch.attributes['path'].nodeValue)
+            xcmds = xrepo.getElementsByTagName('postDownloadAction')
+            for xcmd in xcmds:
+                repo.addCommand(xcmd.attributes['command'].nodeValue)
+            repos.addRepo(repo)
+
+        xrepos = xmldata.getElementsByTagName('extrepo')
+        for xrepo in xrepos:
+            repo = ARRepo(xrepo.attributes['url'].nodeValue, xrepo.attributes['rev'].nodeValue, isExternal=True)
+            xpatches = xrepo.getElementsByTagName('patchFile')
+            for xpatch in xpatches:
+                repo.addPatchFile(xpatch.attributes['path'].nodeValue)
+            xcmds = xrepo.getElementsByTagName('postDownloadAction')
+            for xcmd in xcmds:
+                repo.addCommand(xcmd.attributes['command'].nodeValue)
+            repos.addRepo(repo)
+
+        xrepos = xmldata.getElementsByTagName('webfile')
+        for xrepo in xrepos:
+            webfile = ARWebfile(xrepo.attributes['url'].nodeValue, xrepo.attributes['storePath'].nodeValue)
+            xpatches = xrepo.getElementsByTagName('patchFile')
+            for xpatch in xpatches:
+                webfile.addPatchFile(xpatch.attributes['path'].nodeValue)
+            xcmds = xrepo.getElementsByTagName('postDownloadAction')
+            for xcmd in xcmds:
+                webfile.addCommand(xcmd.attributes['command'].nodeValue)
+            repos.addWebfile(webfile)
+
     return repos
 
-def parseTargetsXmlFile(path):
-    xfile=open(path, 'r')
-    xdata=xfile.read()
-    xfile.close()
-
-    xmldata = parseString(xdata)
+def parseTargetsXmlFile(paths):
 
     targets = ARTargetsList()
 
-    xtargets = xmldata.getElementsByTagName('target')
-    for xtarget in xtargets:
-        target = ARTarget(xtarget.attributes['name'].nodeValue, xtarget.attributes['soext'].nodeValue)
-        xscrs = xtarget.getElementsByTagName('postbuildscript')
-        for xscr in xscrs:
-            target.addPostbuildScript(xscr.attributes['name'].nodeValue)
-        targets.addTarget(target)
+    for root_path in paths:
+        path = '%(root_path)s/targets.xml' % locals()
+
+        xfile=open(path, 'r')
+        xdata=xfile.read()
+        xfile.close()
+
+        xmldata = parseString(xdata)
+
+        xtargets = xmldata.getElementsByTagName('target')
+        for xtarget in xtargets:
+            needToAdd = True
+            try:
+                target = targets.getTarget(xtarget.attributes['name'].nodeValue)
+                needToAdd = False
+            except:
+                target = ARTarget(xtarget.attributes['name'].nodeValue, xtarget.attributes['soext'].nodeValue)
+            xscrs = xtarget.getElementsByTagName('postbuildscript')
+            for xscr in xscrs:
+                target.addPostbuildScript(xscr.attributes['name'].nodeValue)
+
+            if needToAdd:
+                targets.addTarget(target)
+
     return targets
 
-def parsePrebuiltXmlFile(path, targets):
-    xfile=open(path, 'r')
-    xdata=xfile.read()
-    xfile.close()
-
-    xmldata = parseString(xdata)
+def parsePrebuiltXmlFile(paths, targets):
 
     prebuilts = ARPrebuiltList()
+    
+    for root_path in paths:
+        path = '%(root_path)s/prebuilt.xml' % locals()
 
-    xprebuilts = xmldata.getElementsByTagName('prebuilt')
-    for xpb in xprebuilts:
-        pb = ARPrebuilt(xpb.attributes['name'].nodeValue, xpb.attributes['type'].nodeValue, xpb.attributes['path'].nodeValue)
+        xfile=open(path, 'r')
+        xdata=xfile.read()
+        xfile.close()
 
-        xtars = xpb.getElementsByTagName('validtar')
-        for xtar in xtars:
-            pb.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
-        prebuilts.addPrebuilt(pb)
+        xmldata = parseString(xdata)
+
+    
+        xprebuilts = xmldata.getElementsByTagName('prebuilt')
+        for xpb in xprebuilts:
+            pb = ARPrebuilt(xpb.attributes['name'].nodeValue, xpb.attributes['type'].nodeValue, xpb.attributes['path'].nodeValue)
+            xtars = xpb.getElementsByTagName('validtar')
+            for xtar in xtars:
+                pb.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
+            prebuilts.addPrebuilt(pb)
+
     return prebuilts
 
-def parseLibraryXmlFile(path, targets, prebuilts):
-    xfile=open(path, 'r')
-    xdata=xfile.read()
-    xfile.close()
-
-    xmldata = parseString(xdata)
+def parseLibraryXmlFile(paths, targets, prebuilts):
 
     libraries = ARLibrariesList()
 
-    xlibraries = xmldata.getElementsByTagName('extlib')
-    for xlib in xlibraries:
-        lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
+    for root_path in paths:
+        path = '%(root_path)s/libraries.xml' % locals()
 
-        xtargets = xlib.getElementsByTagName('validtar')
-        for xtarget in xtargets:
-            lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
-        xdeps = xlib.getElementsByTagName('dep')
-        for xdep in xdeps:
-            ltargets = []
-            xtars = xdep.getElementsByTagName('validdeptar')
-            for xtar in xtars:
-                ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
-            lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
-        xpbdeps = xlib.getElementsByTagName('prebuiltdep')
-        for xpbdep in xpbdeps:
-            ltargets = []
-            xtars = xpbdep.getElementsByTagName('validdeptar')
-            for xtar in xtars:
-                ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
-            lib.addPrebuiltDep(prebuilts.getPrebuilt(xpbdep.attributes['name'].nodeValue).ARCopy(ltargets))
-        xflags = xlib.getElementsByTagName('extraConfigureFlag')
-        for xflag in xflags:
-            lib.addExtraConfFlag(xflag.attributes['value'].nodeValue)
-        libraries.addLib(lib)
+        xfile=open(path, 'r')
+        xdata=xfile.read()
+        xfile.close()
 
-    xlibraries = xmldata.getElementsByTagName('lib')
-    for xlib in xlibraries:
-        lib = ARLibrary(xlib.attributes['name'].nodeValue)
+        xmldata = parseString(xdata)
 
-        xtargets = xlib.getElementsByTagName('validtar')
-        for xtarget in xtargets:
-            lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
-        xdeps = xlib.getElementsByTagName('dep')
-        for xdep in xdeps:
-            ltargets = []
-            xtars = xdep.getElementsByTagName('validdeptar')
-            for xtar in xtars:
-                ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
-            lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
-        xpbdeps = xlib.getElementsByTagName('prebuiltdep')
-        for xpbdep in xpbdeps:
-            ltargets = []
-            xtars = xdep.getElementsByTagName('validdeptar')
-            for xtar in xtars:
-                ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
-            lib.addPrebuiltDep(prebuilts.getPrebuilt(xpbdep.attributes['name'].nodeValue).ARCopy(ltargets))
-        xflags = xlib.getElementsByTagName('extraConfigureFlag')
-        for xflag in xflags:
-            lib.addExtraConfFlag(xflag.attributes['value'].nodeValue)
-        xcdeps = xlib.getElementsByTagName('configureDepFile')
-        for xcdep in xcdeps:
-            lib.addConfDep(xcdep.attributes['name'].nodeValue)
-        libraries.addLib(lib)
+        xlibraries = xmldata.getElementsByTagName('extlib')
+        for xlib in xlibraries:
+            lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
+            xtargets = xlib.getElementsByTagName('validtar')
+            for xtarget in xtargets:
+                lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
+            xdeps = xlib.getElementsByTagName('dep')
+            for xdep in xdeps:
+                ltargets = []
+                xtars = xdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            xpbdeps = xlib.getElementsByTagName('prebuiltdep')
+            for xpbdep in xpbdeps:
+                ltargets = []
+                xtars = xpbdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                lib.addPrebuiltDep(prebuilts.getPrebuilt(xpbdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            xflags = xlib.getElementsByTagName('extraConfigureFlag')
+            for xflag in xflags:
+                lib.addExtraConfFlag(xflag.attributes['value'].nodeValue)
+            libraries.addLib(lib)
+
+        xlibraries = xmldata.getElementsByTagName('lib')
+        for xlib in xlibraries:
+            lib = ARLibrary(xlib.attributes['name'].nodeValue)
+            xtargets = xlib.getElementsByTagName('validtar')
+            for xtarget in xtargets:
+                lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
+            xdeps = xlib.getElementsByTagName('dep')
+            for xdep in xdeps:
+                ltargets = []
+                xtars = xdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            xpbdeps = xlib.getElementsByTagName('prebuiltdep')
+            for xpbdep in xpbdeps:
+                ltargets = []
+                xtars = xdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                lib.addPrebuiltDep(prebuilts.getPrebuilt(xpbdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            xflags = xlib.getElementsByTagName('extraConfigureFlag')
+            for xflag in xflags:
+                lib.addExtraConfFlag(xflag.attributes['value'].nodeValue)
+            xcdeps = xlib.getElementsByTagName('configureDepFile')
+            for xcdep in xcdeps:
+                lib.addConfDep(xcdep.attributes['name'].nodeValue)
+            libraries.addLib(lib)
+
     return libraries
 
-def parseBinariesXmlFile(path, targets, libraries):
-    xfile=open(path, 'r')
-    xdata=xfile.read()
-    xfile.close()
-
-    xmldata = parseString(xdata)
+def parseBinariesXmlFile(paths, targets, libraries):
 
     binaries = ARBinariesList()
 
-    xbinaries = xmldata.getElementsByTagName('binary')
-    for xbin in xbinaries:
-        bin = ARBinary(xbin.attributes['name'].nodeValue, xbin.attributes['pathToBuildDir'].nodeValue)
+    for root_path in paths:
+        path = '%(root_path)s/binaries.xml' % locals()
 
-        xtars = xbin.getElementsByTagName('validtar')
-        for xtar in xtars:
-            bin.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
-        xdeps = xbin.getElementsByTagName('deplib')
-        for xdep in xdeps:
-            ltargets = []
-            xtars = xdep.getElementsByTagName('validdeptar')
+        xfile=open(path, 'r')
+        xdata=xfile.read()
+        xfile.close()
+
+        xmldata = parseString(xdata)
+
+        xbinaries = xmldata.getElementsByTagName('binary')
+        for xbin in xbinaries:
+            bin = ARBinary(xbin.attributes['name'].nodeValue, xbin.attributes['pathToBuildDir'].nodeValue)
+            xtars = xbin.getElementsByTagName('validtar')
             for xtar in xtars:
-                ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
-            bin.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
-        xflags = xbin.getElementsByTagName('extraConfigureFlag')
-        for xflag in xflags:
-            bin.addExtraConfFlag(xflag.attributes['value'].nodeValue)
-        binaries.addBin(bin)
+                bin.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
+            xdeps = xbin.getElementsByTagName('deplib')
+            for xdep in xdeps:
+                ltargets = []
+                xtars = xdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                bin.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            xflags = xbin.getElementsByTagName('extraConfigureFlag')
+            for xflag in xflags:
+                bin.addExtraConfFlag(xflag.attributes['value'].nodeValue)
+            binaries.addBin(bin)
+
     return binaries

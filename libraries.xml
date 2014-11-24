@@ -109,6 +109,11 @@
     <dep name="ARNetwork"/>
   </lib>
 
+  <lib name="ARMavlink">
+      <dep name="ARSAL"/>
+      <prebuiltdep name="mavlink"/>
+  </lib>
+
   <extlib name="curl" path="../curl">
     <extraConfigureFlag value="--disable-ares"/>
     <extraConfigureFlag value="--disable-file"/>
