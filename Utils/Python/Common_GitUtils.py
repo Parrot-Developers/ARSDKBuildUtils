@@ -31,7 +31,7 @@
 from ARFuncs import *
 import os
 
-def checkAllReposUpToDate(repos, MYDIR, failOnError=False):
+def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
     print("checkAllReposUpToDate")
     for repo in repos.list:
         # Clone non existant repositories
@@ -46,13 +46,13 @@ def checkAllReposUpToDate(repos, MYDIR, failOnError=False):
             newDir.exit()
         # Check for local changes + checkout + pull if needed
         gitscript = '%(MYDIR)s/Utils/updateGitStatus.bash' % locals()
-        failArg = ' exitOnFailed' if failOnError else ''
         for patch in reversed(repo.patches):
             patchPath = ARPathFromHere(patch)
             repoDir = Chdir(repo.getDir())
             ARExecute('patch -tsNR -p0 < %(patchPath)s' % locals(), failOnError=False)
             repoDir.exit()
         failOnError = (not repo.ext) or repo.extra
+        failArg = ' exitOnFailed' if nonInteractive else ''
         ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repo.rev + failArg, failOnError=failOnError)
         for patch in repo.patches:
             patchPath = ARPathFromHere(patch)
