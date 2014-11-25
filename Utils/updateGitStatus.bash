@@ -197,6 +197,14 @@ if [ x$NEEDS_CHECKOUT = xYES ]; then
 	if [ $CURR_SHA1 = $REPO_REVISION ]; then
 		echo "Already on good sha1" | tee -a $ARLOGF
 		NEEDS_CHECKOUT="NO"
+	else
+		TAGS_HERE=$(git tag --points-at HEAD)
+		for TAG in $TAGS_HERE; do
+			if [ "$TAG" = "$REPO_REVISION" ]; then
+				echo "Already on good tag (or at least on the sha1 pointed by the tag)" | tee -a $ARLOGF
+				NEEDS_CHECKOUT="NO"
+			fi
+		done
 	fi
 fi
 
