@@ -193,6 +193,14 @@ if ! git diff-index --cached --quiet HEAD; then
 fi
 
 if [ x$NEEDS_CHECKOUT = xYES ]; then
+	CURR_SHA1=$(git rev-parse HEAD)
+	if [ $CURR_SHA1 = $REPO_REVISION ]; then
+		echo "Already on good sha1" | tee -a $ARLOGF
+		NEEDS_CHECKOUT="NO"
+	fi
+fi
+
+if [ x$NEEDS_CHECKOUT = xYES ]; then
 	if ! git fetch; then
 		echo "Unable to fetch $REPODIR" | tee -a $ARLOGF
 		RETCODE=1
