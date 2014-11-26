@@ -54,15 +54,9 @@ def Common_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=No
                 if not os.path.exists(OutputDir):
                     os.makedirs(OutputDir)
                 Path = pb.path
-                envMatches = re.findall(r'%\{.*?\}%', Path)
-                for _match in envMatches:
-                    Match = _match.replace('%{', '').replace('}%', '')
-                    if Match in os.environ:
-                        EnvMatch = os.environ.get(Match)
-                        Path = Path.replace(_match, EnvMatch)
-                    else:
-                        ARLog('Environment variable %(Match)s is not set !' % locals())
-                        EndDumpArgs(res=False, **args)
+                Path = ARReplaceEnvVars(Path)
+                if Path is None:
+                    return EndDumpArgs(res=False, **args)
                 OutputFile = os.path.join(OutputDir, os.path.basename(Path))
                 if not os.path.exists(OutputFile):
                     shutil.copy2(Path, OutputFile)
@@ -81,15 +75,9 @@ def Common_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=No
                 OutputDirs = [forcedOutputDir]
             for OutputDir in OutputDirs:
                 Path = pb.path
-                envMatches = re.findall(r'%\{.*?\}%', Path)
-                for _match in envMatches:
-                    Match = _match.replace('%{', '').replace('}%', '')
-                    if Match in os.environ:
-                        EnvMatch = os.environ.get(Match)
-                        Path = Path.replace(_match, EnvMatch)
-                    else:
-                        ARLog('Environment variable %(Match)s is not set !' % locals())
-                        EndDumpArgs(res=False, **args)
+                Path = ARReplaceEnvVars(Path)
+                if Path is None:
+                    return EndDumpArgs(res=False, **args)
                 ARCopyAndReplace(Path, OutputDir, deletePrevious=True)
         elif Type == 'external_project':
             if not forcedOutputDir:
@@ -98,15 +86,9 @@ def Common_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=No
                 OutputDirs = [ forcedOutputDir ]
             for OutputDir in OutputDirs:
                 Path = pb.path
-                envMatches = re.findall(r'%\{.*?\}%', Path)
-                for _match in envMatches:
-                    Match = _match.replace('%{', '').replace('}%', '')
-                    if Match in os.environ:
-                        EnvMatch = os.environ.get(Match)
-                        Path = Path.replace(_match, EnvMatch)
-                    else:
-                        ARLog('Environment variable %(Match)s is not set !' % locals())
-                        EndDumpArgs(res=False, **args)
+                Path = ARReplaceEnvVars(Path)
+                if Path is None:
+                    return EndDumpArgs(res=False, **args)
                 if not os.path.exists(OutputDir):
                     os.symlink(Path,OutputDir)
         else:
