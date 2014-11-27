@@ -9,7 +9,7 @@
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the 
+      the documentation and/or other materials provided with the
       distribution.
     * Neither the name of Parrot nor the names
       of its contributors may be used to endorse or promote products
@@ -23,7 +23,7 @@
     COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
     AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
     OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -58,62 +58,62 @@ function ARQuit
                     RETCODE=0
                     break
                     ;;
-				Retry )
-					echo "Trying again" | tee -a $ARLOGF
-					$ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
-					RETCODE=$?
-					break
-					;;
-				Stash/Stash-Pop )
-					echo "Stashing your changes" | tee -a $ARLOGF
-					if ! git stash; then
-						echo "Error while stashing !" | tee -a $ARLOGF
-						RETCODE=1
-						break
-					fi
-					$ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
-					RETCODE=$?
-					if [ $RETCODE -ne 0 ]; then
-						break
-					fi
-					if ! git stash pop; then
-						echo "Stash pop failed ... Go fix it manually !" | tee -a $ARLOGF
-						RETCODE=1
-					fi
-					break
-					;;
-				Show-Diff )
-					echo "Showing diff in the repo" | tee -a $ARLOGF
-					if ! git diff; then
-						echo "Error while showing diff !" | tee -a $ARLOGF
-						RETCODE=1
-						break
-					fi
-					$ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
-					RETCODE=$?
-					break
-					;;
-				Reset )
-					RETCODE=0
-					echo "Are you sure you want to reset $REPODIR ???" | tee -a $ARLOGF
-					select ryn in "Yes" "No"; do
-						case $ryn in
-							Yes )
-								if ! git reset --hard; then
-									echo "Error while resetting !" | tee -a $ARLOGF
-									RETCODE=1
-								fi
-								break
-								;;
-						esac
-					done
-					if [ $RETCODE -eq 0 ]; then
-						$ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
-						RETCODE=$?
-					fi
-					break
-					;;
-					
+                Retry )
+                    echo "Trying again" | tee -a $ARLOGF
+                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    RETCODE=$?
+                    break
+                    ;;
+                Stash/Stash-Pop )
+                    echo "Stashing your changes" | tee -a $ARLOGF
+                    if ! git stash; then
+                        echo "Error while stashing !" | tee -a $ARLOGF
+                        RETCODE=1
+                        break
+                    fi
+                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    RETCODE=$?
+                    if [ $RETCODE -ne 0 ]; then
+                        break
+                    fi
+                    if ! git stash pop; then
+                        echo "Stash pop failed ... Go fix it manually !" | tee -a $ARLOGF
+                        RETCODE=1
+                    fi
+                    break
+                    ;;
+                Show-Diff )
+                    echo "Showing diff in the repo" | tee -a $ARLOGF
+                    if ! git diff; then
+                        echo "Error while showing diff !" | tee -a $ARLOGF
+                        RETCODE=1
+                        break
+                    fi
+                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    RETCODE=$?
+                    break
+                    ;;
+                Reset )
+                    RETCODE=0
+                    echo "Are you sure you want to reset $REPODIR ???" | tee -a $ARLOGF
+                    select ryn in "Yes" "No"; do
+                        case $ryn in
+                            Yes )
+                                if ! git reset --hard; then
+                                    echo "Error while resetting !" | tee -a $ARLOGF
+                                    RETCODE=1
+                                fi
+                                break
+                                ;;
+                        esac
+                    done
+                    if [ $RETCODE -eq 0 ]; then
+                        $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                        RETCODE=$?
+                    fi
+                    break
+                    ;;
+
             esac
             echo "Error while updating status for repo $REPODIR" | tee -a $ARLOGF
             break
@@ -163,6 +163,7 @@ if [ ! -d $REPODIR ]; then
 fi
 
 NEEDS_CHECKOUT="YES"
+NEEDS_PULL="YES"
 
 if [ x$REPO_REVISION = xDEV ]; then
     echo "Don't touch repo $REPODIR (revision = DEV)" | tee -a $ARLOGF
@@ -193,32 +194,34 @@ if ! git diff-index --cached --quiet HEAD; then
 fi
 
 if [ x$NEEDS_CHECKOUT = xYES ]; then
-	CURR_SHA1=$(git rev-parse HEAD)
-	if [ $CURR_SHA1 = $REPO_REVISION ]; then
-		echo "Already on good sha1" | tee -a $ARLOGF
-		NEEDS_CHECKOUT="NO"
-	else
-		TAGS_HERE=$(git tag --points-at HEAD)
-		for TAG in $TAGS_HERE; do
-			if [ "$TAG" = "$REPO_REVISION" ]; then
-				echo "Already on good tag (or at least on the sha1 pointed by the tag)" | tee -a $ARLOGF
-				NEEDS_CHECKOUT="NO"
-			fi
-		done
-	fi
+    CURR_SHA1=$(git rev-parse HEAD)
+    if [ $CURR_SHA1 = $REPO_REVISION ]; then
+        echo "Already on good sha1" | tee -a $ARLOGF
+        NEEDS_CHECKOUT="NO"
+        NEEDS_PULL="NO"
+    else
+        TAGS_HERE=$(git tag --points-at HEAD)
+        for TAG in $TAGS_HERE; do
+            if [ "$TAG" = "$REPO_REVISION" ]; then
+                echo "Already on good tag (or at least on the sha1 pointed by the tag)" | tee -a $ARLOGF
+                NEEDS_CHECKOUT="NO"
+                NEEDS_PULL="NO"
+            fi
+        done
+    fi
 fi
 
 if [ x$NEEDS_CHECKOUT = xYES ]; then
-	if ! git fetch; then
-		echo "Unable to fetch $REPODIR" | tee -a $ARLOGF
-		RETCODE=1
-		ARQuit
-	fi
-	if ! git fetch --tags; then
-		echo "Unable to fetch --tags $REPODIR" | tee -a $ARLOGF
-		RETCODE=1
-		ARQuit
-	fi
+    if ! git fetch; then
+        echo "Unable to fetch $REPODIR" | tee -a $ARLOGF
+        RETCODE=1
+        ARQuit
+    fi
+    if ! git fetch --tags; then
+        echo "Unable to fetch --tags $REPODIR" | tee -a $ARLOGF
+        RETCODE=1
+        ARQuit
+    fi
     if ! git checkout $REPO_REVISION; then
         echo "Unable to checkout $REPO_REVISION for $REPODIR" | tee -a $ARLOGF
         echo " --> Working tree might have changed !" | tee -a $ARLOGF
@@ -227,24 +230,26 @@ if [ x$NEEDS_CHECKOUT = xYES ]; then
     fi
 fi
 
-if git symbolic-ref -q HEAD; then
-    REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
-    if [ x$REMOTE != x'@{u}' ]; then
+if [ x$NEEDS_PULL = xYES ]; then
+	if git symbolic-ref -q HEAD; then
+		REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+		if [ x$REMOTE != x'@{u}' ]; then
         # On a branch, with a tracking remote one
-        CNT=$(git rev-list $REMOTE..HEAD -n 1 | wc -l)
-        if [ $CNT -ne 0 ]; then
-            echo "Local commits found on a remote tracking branch" | tee -a $ARLOGF
-            echo " --> Don't pull because a merge conflict could happen" | tee -a $ARLOGF
-            RETCODE=1
-            ARQuit
-        fi
-    fi
-    echo "On a branch, pulling" | tee -a $ARLOGF
-    if ! git pull; then
-        echo "Unable to pull the branch" | tee -a $ARLOGF
-        RETCODE=1
-        ARQuit
-    fi
+			CNT=$(git rev-list $REMOTE..HEAD -n 1 | wc -l)
+			if [ $CNT -ne 0 ]; then
+				echo "Local commits found on a remote tracking branch" | tee -a $ARLOGF
+				echo " --> Don't pull because a merge conflict could happen" | tee -a $ARLOGF
+				RETCODE=1
+				ARQuit
+			fi
+		fi
+		echo "On a branch, pulling" | tee -a $ARLOGF
+		if ! git pull; then
+			echo "Unable to pull the branch" | tee -a $ARLOGF
+			RETCODE=1
+			ARQuit
+		fi
+	fi
 fi
 
 cd $HERE
