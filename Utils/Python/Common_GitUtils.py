@@ -41,6 +41,9 @@ def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
                 repoURL = 'https://github.com/ARDroneSDK3/%(repo)s.git' % locals()
             else:
                 repoURL = repo.name
+                repoURL = ARReplaceEnvVars(repoURL)
+                if repoURL is None:
+                    EXIT(1)
             newDir = Chdir(ARPathFromHere('..'))
             ARExecute('git clone %(repoURL)s' % locals(), failOnError=(not repo.ext))
             newDir.exit()

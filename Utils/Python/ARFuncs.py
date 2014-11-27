@@ -33,6 +33,7 @@ import subprocess
 import os
 import inspect
 import shutil
+import re
 
 # Print a message
 def ARPrint(msg, noNewLine=False):
@@ -252,3 +253,15 @@ def ARGetNumberOfCpus():
     except (ImportError, NotImplementedError):
         pass
     return 1
+
+def ARReplaceEnvVars(source):
+    envMatches = re.findall(r'%\{.*?\}%', source)
+    for _match in envMatches:
+        Match = _match.replace('%{', '').replace('}%', '')
+        try:
+            EnvMatch = os.environ[Match]
+            source = source.replace(_match, EnvMatch)
+        except (KeyError):
+            ARLog('Environment variable %(Match)s is not set !' % locals())
+            return None
+    return source

@@ -80,14 +80,14 @@
   <repo name="Docs" rev="fb81fe1fce31fa22c8dd6ea162cb5d30b162ded9"/>
 
   <!-- SDK Repositories -->
-  <repo name="libARCommands" rev="fe1e34c0de31990b73f900ae7568e530da9a2993"/>
+  <repo name="libARCommands" rev="b7d79510cec7e8aa13507a22c4b7068c2ebd4010"/>
   <repo name="libARDiscovery" rev="d0af17e3aed974f8135f4d6f26bc71ee43a6f26f"/>
   <repo name="libARNetwork" rev="4980764f4e0f6e413051ba6191bf14d8fa5ba93e"/>
-  <repo name="libARNetworkAL" rev="6dc56ba59a0f63d6d051f078647547a02194d009"/>
+  <repo name="libARNetworkAL" rev="d60408486fc38e80c79fa00881a01d1bcb66889e"/>
   <repo name="libARSAL" rev="40ec7a7bf9b96946d93b9f7d276ed3299a4a5834"/>
   <repo name="libARStream" rev="00438d1123ec0a93fae02022c539b9cbeac12355"/>
   <repo name="libARMedia" rev="7f3fe5d42af5d4fb6de856996c0c5dba6c212324"/>
-  <repo name="libARUtils" rev="6ff83cd4616f12aca247cd2a780ff9f756cf61e9"/>
+  <repo name="libARUtils" rev="322114f5508668503b7a9509b27fa461fbc4bf30"/>
   <repo name="libARUpdater" rev="839628ecfd64e002cb51861b26e138c044c8c673"/>
   <repo name="libARDataTransfer" rev="105fa0b37ef65c639cde40086c270231be242371"/>
   <repo name="libARMavlink" rev="e9cb4b77567e6b7432179ca041245ffef60d9fd4"/>
