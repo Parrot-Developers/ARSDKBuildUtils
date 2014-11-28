@@ -89,7 +89,7 @@
   <repo name="libARMedia" rev="80ab97ca316a84021bf47163368f9e24fad88c53"/>
   <repo name="libARUtils" rev="3c71fb5d62f83197f44b20492d0caaac525cb3d3"/>
   <repo name="libARUpdater" rev="839628ecfd64e002cb51861b26e138c044c8c673"/>
-  <repo name="libARDataTransfer" rev="f83521c8697ca98a5fc1fed93190f211210f3481"/>
+  <repo name="libARDataTransfer" rev="af667d9609551b2870fe929f5a20148134fdeff1"/>
   <repo name="libARMavlink" rev="e9cb4b77567e6b7432179ca041245ffef60d9fd4"/>
 
   <!-- External Repositories -->
