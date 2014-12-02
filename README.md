@@ -3,7 +3,8 @@ ARSDKBuildUtils
 
 This is the Builder project of the SDK, its entry point. 
 ARSDKBuildUtils will help you clone all other projects of the SDK and then build everything
-**The latest release version is tagged ARSDK3_version_3_1_0 **
+
+**The latest release version is tagged ARSDK3_version_3_1_0**
 
 Usage
 -------------
