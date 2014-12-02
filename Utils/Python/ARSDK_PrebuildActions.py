@@ -280,6 +280,8 @@ def writeEnumToJavaFile(enumType):
     jfile.write(' * Java copy of the ' + enumType.name + ' enum\n')
     jfile.write(' */\n')
     jfile.write('public enum ' + CLASS_NAME + ' {\n')
+    unknownEnumEntry = AREnumEntry(enumType.name + "_UNKNOWN_ENUM_VALUE", "Integer.MIN_VALUE", "Dummy value for all unknown cases")
+    jfile.write(entryConstructor(unknownEnumEntry))
     for entry in enumType.entries[:-1]:
         jfile.write(entryConstructor(entry))
     entry = enumType.entries[-1]
@@ -320,7 +322,11 @@ def writeEnumToJavaFile(enumType):
     jfile.write('                valuesList.put (entry.getValue (), entry);\n')
     jfile.write('            }\n')
     jfile.write('        }\n')
-    jfile.write('        return valuesList.get (value);\n')
+    jfile.write('        ' + CLASS_NAME + ' retVal = valuesList.get (value);\n')
+    jfile.write('        if (retVal == null) {\n')
+    jfile.write('            retVal = ' + unknownEnumEntry.name + ';\n')
+    jfile.write('        }\n')
+    jfile.write('        return retVal;')
     jfile.write('    }\n')
     jfile.write('\n')
     jfile.write('    /**\n')
