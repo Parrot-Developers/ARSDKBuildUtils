@@ -87,7 +87,7 @@
   <repo name="libARSAL" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARStream" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARMedia" rev="ARSDK3_version_3_1_0"/>
-  <repo name="libARUtils" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARUtils" rev="37457f0f0b3d133d0d913594c8f56b7a8b7a6887"/>
   <repo name="libARUpdater" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARDataTransfer" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARMavlink" rev="ARSDK3_version_3_1_0"/>
