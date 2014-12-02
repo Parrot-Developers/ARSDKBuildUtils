@@ -80,7 +80,7 @@
   <repo name="Docs" rev="ARSDK3_version_3_1_0"/>
 
   <!-- SDK Repositories -->
-  <repo name="libARCommands" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARCommands" rev="892aafb97434492c16117d35efd3a8aecbce09be"/>
   <repo name="libARDiscovery" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARNetwork" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARNetworkAL" rev="ARSDK3_version_3_1_0"/>
