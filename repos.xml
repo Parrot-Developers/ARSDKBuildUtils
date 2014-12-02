@@ -77,20 +77,20 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="fb81fe1fce31fa22c8dd6ea162cb5d30b162ded9"/>
+  <repo name="Docs" rev="ARSDK3_version_3_1_0"/>
 
   <!-- SDK Repositories -->
-  <repo name="libARCommands" rev="b7d79510cec7e8aa13507a22c4b7068c2ebd4010"/>
-  <repo name="libARDiscovery" rev="d0af17e3aed974f8135f4d6f26bc71ee43a6f26f"/>
-  <repo name="libARNetwork" rev="4980764f4e0f6e413051ba6191bf14d8fa5ba93e"/>
-  <repo name="libARNetworkAL" rev="d60408486fc38e80c79fa00881a01d1bcb66889e"/>
-  <repo name="libARSAL" rev="40ec7a7bf9b96946d93b9f7d276ed3299a4a5834"/>
-  <repo name="libARStream" rev="00438d1123ec0a93fae02022c539b9cbeac12355"/>
-  <repo name="libARMedia" rev="80ab97ca316a84021bf47163368f9e24fad88c53"/>
-  <repo name="libARUtils" rev="3c71fb5d62f83197f44b20492d0caaac525cb3d3"/>
-  <repo name="libARUpdater" rev="839628ecfd64e002cb51861b26e138c044c8c673"/>
-  <repo name="libARDataTransfer" rev="9e381a83cf96f142b289716030fbdae05ae6cfb9"/>
-  <repo name="libARMavlink" rev="e9cb4b77567e6b7432179ca041245ffef60d9fd4"/>
+  <repo name="libARCommands" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARDiscovery" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARNetwork" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARNetworkAL" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARSAL" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARStream" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARMedia" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARUtils" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARUpdater" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARDataTransfer" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARMavlink" rev="ARSDK3_version_3_1_0"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/bagder/curl.git" rev="curl-7_36_0"/>
