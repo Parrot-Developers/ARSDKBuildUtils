@@ -49,10 +49,13 @@ class ARRepo:
         self.rev = revision
         self.ext = isExternal
         self.extra = isExtraRepo
+        self.path = None
         self.patches = []
         self.additionnalCommands = []
     def getDir(self):
-        if self.ext:
+        if self.path:
+            return ARPathFromHere(self.path)
+        elif self.ext:
             foldername = re.sub(r'.*/(.*).git', r'\1', self.name)
             return ARPathFromHere('../%(foldername)s' % locals())
         else:
@@ -63,11 +66,16 @@ class ARRepo:
             self.patches.append(patchFile)
     def addCommand(self, command):
         self.additionnalCommands.append (command)
+    def setPath(self, path):
+        self.path = path
     def describe(self, level=0):
         prefix = ''
         for i in range(0, level):
             prefix = prefix + ' '
-        ARPrint(prefix + 'ARRepo > Name : ' + self.name + ' | Revision : ' + self.rev)
+        if self.path:
+            ARPrint(prefix + 'ARRepo > Name : ' + self.name + ' | Revision : ' + self.rev + ' | Path : ' + self.path)
+        else:
+            ARPrint(prefix + 'ARRepo > Name : ' + self.name + ' | Revision : ' + self.rev)
         for pf in self.patches:
             ARPrint(prefix + '         Patch : ' + pf)
         for cmd in self.additionnalCommands:
@@ -641,6 +649,10 @@ def parseRepoXmlFile(paths):
         xrepos = xmldata.getElementsByTagName('extrarepo')
         for xrepo in xrepos:
             repo = ARRepo(xrepo.attributes['url'].nodeValue, xrepo.attributes['rev'].nodeValue, isExternal=True, isExtraRepo=True)
+            try:
+                repo.setPath(xrepo.attributes['path'].nodeValue)
+            except:
+                pass
             xpatches = xrepo.getElementsByTagName('patchFile')
             for xpatch in xpatches:
                 repo.addPatchFile(xpatch.attributes['path'].nodeValue)
