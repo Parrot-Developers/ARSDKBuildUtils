@@ -1,8 +1,32 @@
-ARSDKBuildUtils
+ARDroneSDK3
 ===============
 
-This is the Builder project of the SDK, its entry point. 
-ARSDKBuildUtils will help you clone all other projects of the SDK and then build everything
+**Welcome to the Software Development Kit for Parrot Drones Version 3.**
+
+It can be used to write applications which control the latest generation of Parrot Drones:
+- Bebop Drone
+- Rolling Spider
+- Jumping Sumo
+- Skycontroller  
+  
+  
+  
+The SDK provides the source code you need to do everything provided by the freeflight 3 application:
+- discover the drones on the network
+- connect the drones
+- send piloting and camera commands
+- configure the drones
+- get informations (depends on drones capabilities)
+- get H264 video stream on bebop
+- get MJpeg video stream on Jumping Sumo
+- transfer Photos / videos
+- update the drones
+- handle Drone Academy / FlightPlan files
+- and everything which pops out of your mind
+
+
+It's BSD license allows to use, change, distributed with no restriction.
+Contributions and new feature discussions are highly appreciated.
 
 **The latest release version is tagged ARSDK3_version_3_1_0**
 
