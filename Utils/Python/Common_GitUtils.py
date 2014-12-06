@@ -44,8 +44,9 @@ def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
                 repoURL = ARReplaceEnvVars(repoURL)
                 if repoURL is None:
                     EXIT(1)
+            rDir = repo.getDir()
             newDir = Chdir(ARPathFromHere('..'))
-            ARExecute('git clone %(repoURL)s' % locals() + ' ' + repo.getDir(), failOnError=(not repo.ext))
+            ARExecute('git clone %(repoURL)s' % locals() + ' ' + rDir, failOnError=(not repo.ext))
             newDir.exit()
         # Check for local changes + checkout + pull if needed
         gitscript = '%(MYDIR)s/Utils/updateGitStatus.bash' % locals()
