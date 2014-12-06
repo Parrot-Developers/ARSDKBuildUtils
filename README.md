@@ -7,9 +7,9 @@ It can be used to write applications which control the latest generation of Parr
 - Bebop Drone
 - Rolling Spider
 - Jumping Sumo
-- Skycontroller  
-  
-  
+- Skycontroller
+
+<br>
   
 The SDK provides the source code you need to do everything provided by the freeflight 3 application:
 - discover the drones on the network
@@ -21,11 +21,12 @@ The SDK provides the source code you need to do everything provided by the freef
 - get MJpeg video stream on Jumping Sumo
 - transfer Photos / videos
 - update the drones
-- handle Drone Academy / FlightPlan files
+- handle Drone Academy / Mavlink files
 - and everything which pops out of your mind
 
+<br>
 
-It's BSD license allows to use, change, distributed with no restriction.
+It's BSD license allows to use, change, distribute with no restriction.
 Contributions and new feature discussions are highly appreciated.
 
 **The latest release version is tagged ARSDK3_version_3_1_0**
