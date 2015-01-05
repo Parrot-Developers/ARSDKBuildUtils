@@ -60,6 +60,7 @@ targets = [
         'bins' : ['git', 'wget', 'jar'],
         'libs' : [],
         'envs' : [],
+        'cmds' : [],
         'CC' : None,
         },
     {
@@ -69,6 +70,7 @@ targets = [
         'bins' : ['git', 'wget', 'automake', 'autoconf', 'libtool', 'xcrun', 'xcodebuild', 'jar'],
         'libs' : [],
         'envs' : [],
+        'cmds' : [],
         'CC' : None,
         },
     {
@@ -78,6 +80,7 @@ targets = [
         'bins' : ['gcc', 'git', 'wget', 'automake', 'autoconf', 'libtool', 'yasm', 'nasm', 'jar'],
         'libs' : ['-lz', '-pthread'],
         'envs' : [],
+        'cmds' : [],
         'CC' : 'gcc',
         },
     {
@@ -87,6 +90,7 @@ targets = [
         'bins' : ['git', 'wget', 'automake', 'autoconf', 'libtool', 'rpl', 'javac', 'jar', 'arm-linux-androideabi-gcc', 'mipsel-linux-android-gcc', 'i686-linux-android-gcc'],
         'libs' : ['-llog'],
         'envs' : ['ANDROID_NDK_PATH', 'ANDROID_SDK_PATH'],
+        'cmds' : [{'cmd': 'android list targets | grep "API level:" | grep 19', 'desc': 'Check if Android SDK 19 is installed', 'fix': 'Missing Android SDK for API 19 (Android 4.4.2), please install it.'}],
         'CC' : 'arm-linux-androideabi-gcc',
         },
 ]
@@ -181,6 +185,15 @@ for t in targets:
                 status = False
             else:
                 ARCEPrint(' YES')
+        for f in t['cmds']:
+            ARCEPrint('Checking if the command `%s` (%s) works ...' % (f['cmd'], f['desc']), noNewLine=True)
+            if not ARExecute(f['cmd'] + ' >/dev/null 2>&1', printErrorMessage=False, failOnError=False):
+                ARCEPrint(' NO')
+                status = False
+                msg = ARAppendToMessage(msg, f['fix'])
+            else:
+                ARCEPrint(' YES')
+            
     else:
         status = False
         ARCEPrint(' Bad (%s)' % uname)
