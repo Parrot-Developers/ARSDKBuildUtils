@@ -81,7 +81,7 @@
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="914773ccd923ed2cb38418382c4a4e884241d67f"/>
-  <repo name="libARDiscovery" rev="36ea87afa1500aa14d9906d6f6e72c5480b47c02"/>
+  <repo name="libARDiscovery" rev="5afbf2d67fa4e70d7ba889f1ee666435adb2ad89"/>
   <repo name="libARNetwork" rev="1fefecc6756dbba1a08c19975a9c7cb32489db9b"/>
   <repo name="libARNetworkAL" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARSAL" rev="95bb0b955f7c0b2882698844d088f69e5a320969"/>
