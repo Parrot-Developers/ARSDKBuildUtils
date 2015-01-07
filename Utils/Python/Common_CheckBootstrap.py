@@ -88,8 +88,10 @@ def Common_CheckBootstrap(path):
         cdir = Chdir(path)
         if found:
             res = ARExecute(BSTRAP)
-        else:
+        elif os.path.exists(CONFIGURE_AC):
             res = ARExecute('autoreconf -fiv')
+        else:
+            res = True
         cdir.exit()
 
     return EndDumpArgs(res, **args)
