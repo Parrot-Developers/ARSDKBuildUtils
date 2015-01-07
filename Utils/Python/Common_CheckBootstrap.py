@@ -48,6 +48,7 @@ def Common_CheckBootstrap(path):
     CONFIGURE    = '%(path)s/configure' % locals()
     MAKEFILE_AM  = '%(path)s/Makefile.am' % locals()
     CONFIGURE_AC = '%(path)s/configure.ac' % locals()
+    ARSDK_M4     = ARPathFromHere('Utils/m4/ARSDK.m4')
 
     BSTRAP = ''
 
@@ -76,6 +77,9 @@ def Common_CheckBootstrap(path):
         mustRerun = True
     elif ARFileIsNewerThan(CONFIGURE_AC, CONFIGURE):
         ARLog('%(CONFIGURE_AC)s is newer than %(CONFIGURE)s : rerun %(BSTRAP)s' % locals())
+        mustRerun = True
+    elif ARFileIsNewerThan(ARSDK_M4, CONFIGURE):
+        ARLog('%(ARSDK_M4)s is newer than %(CONFIGURE)s : rerun %(BSTRAP)s' % locals())
         mustRerun = True
 
 

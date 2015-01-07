@@ -1,5 +1,5 @@
-# AR_DEPENDS([libNAME], [REQUIRED], [HEADERS],                   [HAS_DEBUG])
-#                         Y or N      list of headers to check     Y or N, assumed to be Y if not passed
+# AR_DEPENDS([libNAME], [REQUIRED], [HEADERS],                   [HAS_DEBUG],                              [HEADER_ONLY])
+#                         Y or N      list of headers to check     Y or N, assumed to be Y if not passed     Y or N, assumed to be N if not passed
 AC_DEFUN([AR_DEPENDS],  [
                         # Add with args
                         # - Install dir
@@ -47,9 +47,11 @@ AC_DEFUN([AR_DEPENDS],  [
                         CPPFLAGS+=" -I$$1IncludeDir"
                         OBJCFLAGS+=" -I$$1IncludeDir"
                         fi
+                        if test x$5 != xY; then
                         # Add lib dir to -L path
                         if test ! -z $$1LibDir; then
                         LDFLAGS+=" -L$$1LibDir"
+                        fi
                         fi
                         # Check given headers
                         ar_$1_support="no"
@@ -63,16 +65,18 @@ AC_DEFUN([AR_DEPENDS],  [
                         define([AR_HAVE_NAME], [HAVE_]translit($1, "a-z", "A-Z"))
                         # Define AM variable HAVE_Name for Makefile.am tests
                         AM_CONDITIONAL(AR_HAVE_NAME, [test x$ar_$1_support = xyes])
-                        # Define AC peprocessor variable HAVE_Name for Source tests
+                        # Define AC preprocessor variable HAVE_Name for Source tests
                         if test x$ar_$1_support = xyes; then
                         AC_DEFINE_UNQUOTED(AR_HAVE_NAME, [1], [$1 presence])
                         fi
                         # Add -l directives
+                        if test x$5 != xY; then
                         if test x$ar_$1_support = xyes; then
                         LNAME=$(echo $1 | sed 's:^lib::' | tr @<:@:upper:@:>@ @<:@:lower:@:>@)
                         if test x$debugit = xyes && test x$4 != xN; then
                         LNAME+="_dbg"
                         fi
                         LDFLAGS+=" -l$LNAME"
+                        fi
                         fi
                         ])
