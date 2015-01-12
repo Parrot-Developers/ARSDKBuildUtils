@@ -48,6 +48,7 @@ def Common_CheckBootstrap(path):
     CONFIGURE    = '%(path)s/configure' % locals()
     MAKEFILE_AM  = '%(path)s/Makefile.am' % locals()
     CONFIGURE_AC = '%(path)s/configure.ac' % locals()
+    CONFIGURE_IN = '%(path)s/configure.in' % locals()
     ARSDK_M4     = ARPathFromHere('Utils/m4/ARSDK.m4')
 
     BSTRAP = ''
@@ -78,6 +79,9 @@ def Common_CheckBootstrap(path):
     elif ARFileIsNewerThan(CONFIGURE_AC, CONFIGURE):
         ARLog('%(CONFIGURE_AC)s is newer than %(CONFIGURE)s : rerun %(BSTRAP)s' % locals())
         mustRerun = True
+    elif ARFileIsNewerThan(CONFIGURE_IN, CONFIGURE):
+        ARLog('%(CONFIGURE_IN)s is newer than %(CONFIGURE)s : rerun %(BSTRAP)s' % locals())
+        mustRerun = True
     elif ARFileIsNewerThan(ARSDK_M4, CONFIGURE):
         ARLog('%(ARSDK_M4)s is newer than %(CONFIGURE)s : rerun %(BSTRAP)s' % locals())
         mustRerun = True
@@ -88,7 +92,7 @@ def Common_CheckBootstrap(path):
         cdir = Chdir(path)
         if found:
             res = ARExecute(BSTRAP)
-        elif os.path.exists(CONFIGURE_AC):
+        elif os.path.exists(CONFIGURE_AC) or os.path.exists(CONFIGURE_IN) or os.path.exists(MAKEFILE_AM):
             res = ARExecute('autoreconf -fiv')
         else:
             res = True
