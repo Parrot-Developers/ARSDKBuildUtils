@@ -77,11 +77,11 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="0b32a2b4b62cd0694d1566302e3e4e5759579112"/>
+  <repo name="Docs" rev="8c3148d7e93f8b5bcfa9595bf804b4aac3bfddc6"/>
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="7da26d0754a94fa975177c81e8af2deb1582e639"/>
-  <repo name="libARDiscovery" rev="6db1ed994c46d82deb39fa98fffa83bce42e4b2a"/>
+  <repo name="libARDiscovery" rev="30211b07df08718736f0f22cf92eaad523c8194e"/>
   <repo name="libARNetwork" rev="d4eb98b785f5c05ba405b336105ad1ce43b30dc8"/>
   <repo name="libARNetworkAL" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARSAL" rev="dc8f0d72d3718c6141a124e1eeaaf083dfb400b8"/>
