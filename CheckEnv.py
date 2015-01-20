@@ -134,6 +134,10 @@ ARPrint('')
 ARPrint('[[ ' + logcolors.PASS + 'Should work' + logcolors.DEF + ', ' + logcolors.FAIL + 'Won\'t work' + logcolors.DEF + ', ' + logcolors.NONE + 'Not tested, may work' + logcolors.DEF + ' ]]')
 ARPrint('')
 
+if sys.version_info < (2, 7):
+    ARPrint(logcolors.FAIL + ' Bad python version.' + logcolors.DEF + ' The SDK requires python 2.7 or higher (python 3 versions are supported)')
+    sys.exit(0)
+
 
 
 for t in targets:
