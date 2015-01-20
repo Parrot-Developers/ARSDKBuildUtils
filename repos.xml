@@ -77,7 +77,7 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="8c3148d7e93f8b5bcfa9595bf804b4aac3bfddc6"/>
+  <repo name="Docs" rev="17c39b4b09031158e862ac100d6283cf9859e1b2"/>
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="7da26d0754a94fa975177c81e8af2deb1582e639"/>
