@@ -83,12 +83,12 @@
   <repo name="libARCommands" rev="525d1964dc3f5263aa60fb99fb41809dfb739491"/>
   <repo name="libARDiscovery" rev="7436f760fa2a3c1e67963c176d0566fa4b6b933f"/>
   <repo name="libARNetwork" rev="d4eb98b785f5c05ba405b336105ad1ce43b30dc8"/>
-  <repo name="libARNetworkAL" rev="e40af4fa93d9bf14c79d733dceae7b9f98c44ae0"/>
+  <repo name="libARNetworkAL" rev="4a0423465ade03a9a47df9e062605283986b1d20"/>
   <repo name="libARSAL" rev="dc8f0d72d3718c6141a124e1eeaaf083dfb400b8"/>
   <repo name="libARStream" rev="ARSDK3_version_3_1_0"/>
   <repo name="libARMedia" rev="5df7f9bc219f78420423dfba8c98b68fecec95b7"/>
-  <repo name="libARUtils" rev="6e7ef31d11e085faf6f2fd061e415a13db91357c"/>
-  <repo name="libARUpdater" rev="ARSDK3_version_3_1_0"/>
+  <repo name="libARUtils" rev="b20667bb4aa95e57a5be4c60b9841ebefc5ffcbf"/>
+  <repo name="libARUpdater" rev="3f2ef5537dc3990fc7206fe6b81e0b96334278a0"/>
   <repo name="libARDataTransfer" rev="d3b614693861104c2a6cec67004b1b55a8c61e39"/>
   <repo name="libARMavlink" rev="ARSDK3_version_3_1_0"/>
   <repo name="Samples" rev="d2f466f4c8dc8dfac501c053cc066ba1663fe401"/>
