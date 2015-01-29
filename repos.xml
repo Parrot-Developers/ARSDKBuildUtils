@@ -91,7 +91,7 @@
   <repo name="libARUpdater" rev="3f2ef5537dc3990fc7206fe6b81e0b96334278a0"/>
   <repo name="libARDataTransfer" rev="d3b614693861104c2a6cec67004b1b55a8c61e39"/>
   <repo name="libARMavlink" rev="ARSDK3_version_3_1_0"/>
-  <repo name="Samples" rev="d2f466f4c8dc8dfac501c053cc066ba1663fe401"/>
+  <repo name="Samples" rev="73c627ce9d14b1381e7cfdde47ec3f829bdab3ce"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/bagder/curl.git" rev="curl-7_36_0"/>
