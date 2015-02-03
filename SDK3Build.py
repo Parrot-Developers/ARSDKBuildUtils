@@ -234,6 +234,13 @@ if parser.installDoc and allOk:
         ARExecute ('%(DocCopyScript)s %(target)s' % locals())
 
 hasColors = ARExecute('tput colors >/dev/null 2>&1', failOnError=False, printErrorMessage=False)
+if ARExistsInPath('stty'):
+    termSizeStr = ARExecuteGetStdout(['stty', 'size'], failOnError=False, printErrorMessage=False)
+    termSizeArr = termSizeStr.split(' ')
+    termCols = int(termSizeArr[1]) - 1
+else:
+    termCols = 80
+
 
 class logcolors:
     FAIL = '\033[31m' if hasColors else 'FA:'
@@ -243,7 +250,23 @@ class logcolors:
     UNAI = '\033[30m' if hasColors else 'NA:'
     DEF  = '\033[39m' if hasColors else ''
 
-def SDKPrintStatus(msg, available, requested, tried, built, padToLen=20, newline=False):
+def SDKPrintStatus(msg, available, requested, tried, built, padToLen=20, newline=False, currentCol=0, baseCol=0):
+    colorLen = 3 if not hasColors else 0
+    padLen = padToLen - len(msg)
+    while padLen <= 0:
+        padLen += padToLen
+    printLen = len(msg) + padLen + colorLen
+
+    futureCol = currentCol + printLen
+
+    if futureCol > termCols:
+        newline = True
+
+    if newline:
+        ARPrint('')
+        ARPrint(' '*baseCol, True)
+        futureCol = printLen + baseCol
+
     if not available:
         ARPrint(logcolors.UNAI, True)
     elif not requested and not tried:
@@ -255,10 +278,12 @@ def SDKPrintStatus(msg, available, requested, tried, built, padToLen=20, newline
     else:
         ARPrint(logcolors.PASS, True)
     ARPrint(msg, True)
-    padLen = padToLen - len(msg)
     if padLen > 0:
         ARPrint(' '*padLen, True)
     ARPrint(logcolors.DEF, True)
+
+    return futureCol
+
 
 ARPrint('')
 ARPrint('Status :')
@@ -273,38 +298,31 @@ for t in targets.list:
     targetBuilt = len(t.alreadyBuiltLibraries) == len(t.triedToBuildLibraries) and not t.failed
     SDKPrintStatus(t.name, True, targetRequested, targetTried, targetBuilt, padToLen=10)
     ARPrint(' : ', True)
-    count=0
+    count=offset
+    first=False
     for l in libraries.list:
-        count = count + 1
-        if count > 8:
-            ARPrint('\n' + ' '*offset, True)
-            count = 1
         libAvailable = l.isAvailableForTarget(t)
         libRequested = l in parser.activeLibs and targetRequested
         libTried = t.hasTriedToBuild(l)
         libBuilt = t.hasAlreadyBuilt(l)
-        SDKPrintStatus(l.name, libAvailable, libRequested, libTried, libBuilt)
+        count = SDKPrintStatus(l.name, libAvailable, libRequested, libTried, libBuilt, padToLen=20, newline=first, currentCol=count, baseCol=offset)
+        first=False
+    first=True
     for b in binaries.list:
-        count = count + 1
-        if count > 8:
-            ARPrint('\n' + ' '*offset, True)
-            count = 1
         binAvailable = b.isAvailableForTarget(t)
         binRequested = b in parser.activeBins and targetRequested
         binTried = t.hasTriedToBuildBinary(b)
         binBuilt = t.hasAlreadyBuiltBinary(b)
-        SDKPrintStatus(b.name + '*', binAvailable, binRequested, binTried, binBuilt)
-    count = 42 # Force scripts to be on a new line
+        count = SDKPrintStatus(b.name + '*', binAvailable, binRequested, binTried, binBuilt, padToLen=20, newline=first, currentCol=count, baseCol=offset)
+        first=False
+    first=True
     for scrinfo in t.postbuildScripts:
-        count = count + 1
-        if count > 4:
-            ARPrint('\n' + ' '*offset, True)
-            count = 1
         scrAvailable = True
         scrRequescted = targetRequested
         scrTried = scrinfo['done'] is not None
         scrBuilt = bool(scrinfo['done'])
-        SDKPrintStatus(scrinfo['name'] + '+ ', scrAvailable, scrRequescted, scrTried, scrBuilt, padToLen=40)
+        count = SDKPrintStatus(scrinfo['name'] + '+', scrAvailable, scrRequescted, scrTried, scrBuilt, padToLen=20, newline=first, currentCol=count, baseCol=offset)
+        first=False
         
         
     ARPrint('')
