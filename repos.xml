@@ -88,7 +88,7 @@
   <repo name="libARStream" rev="b63edb7de2352d0cae2a20b5acbaf7f37d345f80"/>
   <repo name="libARMedia" rev="56acbc27beae691e9078f3d4aaab7f5b94917b91"/>
   <repo name="libARUtils" rev="b20667bb4aa95e57a5be4c60b9841ebefc5ffcbf"/>
-  <repo name="libARUpdater" rev="56ffad0cbae308b9bff1cf9e7832845624a94bbf"/>
+  <repo name="libARUpdater" rev="2ae878195901192a944186516854ae82443fa39f"/>
   <repo name="libARDataTransfer" rev="d3b614693861104c2a6cec67004b1b55a8c61e39"/>
   <repo name="libARMavlink" rev="ARSDK3_version_3_1_0"/>
   <repo name="Samples" rev="73c627ce9d14b1381e7cfdde47ec3f829bdab3ce"/>
