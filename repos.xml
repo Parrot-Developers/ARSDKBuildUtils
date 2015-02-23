@@ -90,7 +90,7 @@
   <repo name="libARUtils" rev="70a99f36b463270a41e206a31a92799996e8eb89"/>
   <repo name="libARUpdater" rev="2ae878195901192a944186516854ae82443fa39f"/>
   <repo name="libARDataTransfer" rev="fbc8587af1dab6bc7b66b3adbfeca5de5391fac7"/>
-  <repo name="libARMavlink" rev="379610e030f0b1c42b04cd9bbb9e2fcf21625bfb"/>
+  <repo name="libARMavlink" rev="02cd4870e63393e7fd8f897a4e30c9f66ecace9c"/>
   <repo name="Samples" rev="503fd4ce8ea78d8f70d683456ebc0215ba7c0fc2"/>
 
   <!-- External Repositories -->
