@@ -237,7 +237,10 @@ hasColors = ARExecute('tput colors >/dev/null 2>&1', failOnError=False, printErr
 if ARExistsInPath('stty'):
     termSizeStr = ARExecuteGetStdout(['stty', 'size'], failOnError=False, printErrorMessage=False)
     termSizeArr = termSizeStr.split(' ')
-    termCols = int(termSizeArr[1]) - 1
+    try:
+        termCols = int(termSizeArr[1]) - 1
+    except:
+        termCols = 80
 else:
     termCols = 80
 
