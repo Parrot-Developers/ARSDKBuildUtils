@@ -152,6 +152,7 @@
 
   <lib name="ARUtils">
       <dep name="ARSAL"/>
+      <dep name="ARNetworkAL"/>
       <dep name="curl"/>
   </lib>
 
