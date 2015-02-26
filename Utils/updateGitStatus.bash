@@ -207,7 +207,7 @@ if [ x$NEED_ADD_REMOTE = xYES ]; then
 fi
 
 if [ x$SKIP_REMOTE_TEST = xNO ]; then
-	CURRENT_REMOTE=$(git remote -vvv | grep origin | grep fetch | sed 's:[^\ \t]*[\ \t]*\([^\ \t]*\)[\ \t]*.*:\1:')
+	CURRENT_REMOTE=$(git remote -vvv | grep origin | grep fetch | sed 's:[^[:blank:]]*[[:blank:]]*\([^[:blank:]]*\)[[:blank:]]*.*:\1:')
 
 	if [ ! x"$CURRENT_REMOTE" = x"$REPO_URL" ]; then
 		echo "Origin does not point to $REPO_URL, but instead to $CURRENT_REMOTE"
