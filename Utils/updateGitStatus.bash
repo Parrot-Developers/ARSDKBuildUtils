@@ -60,7 +60,7 @@ function ARQuit
                     ;;
                 Retry )
                     echo "Trying again" | tee -a $ARLOGF
-                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    $ME $REPODIR $REPO_URL $REPO_REVISION $EXIT_ON_FAILED
                     RETCODE=$?
                     break
                     ;;
@@ -71,7 +71,7 @@ function ARQuit
                         RETCODE=1
                         break
                     fi
-                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    $ME $REPODIR $REPO_URL $REPO_REVISION $EXIT_ON_FAILED
                     RETCODE=$?
                     if [ $RETCODE -ne 0 ]; then
                         break
@@ -89,7 +89,7 @@ function ARQuit
                         RETCODE=1
                         break
                     fi
-                    $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                    $ME $REPODIR $REPO_URL $REPO_REVISION $EXIT_ON_FAILED
                     RETCODE=$?
                     break
                     ;;
@@ -108,7 +108,7 @@ function ARQuit
                         esac
                     done
                     if [ $RETCODE -eq 0 ]; then
-                        $ME $REPODIR $REPO_REVISION $EXIT_ON_FAILED
+                        $ME $REPODIR $REPO_URL $REPO_REVISION $EXIT_ON_FAILED
                         RETCODE=$?
                     fi
                     break
