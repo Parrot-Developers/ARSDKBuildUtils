@@ -34,16 +34,16 @@ import os
 def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
     print("checkAllReposUpToDate")
     for repo in repos.list:
+        if not repo.ext:
+            repoURL = 'https://github.com/ARDroneSDK3/%(repo)s.git' % locals()
+        else:
+            repoURL = repo.name
+            repoURL = ARReplaceEnvVars(repoURL)
+            if repoURL is None:
+                EXIT(1)
         # Clone non existant repositories
         if not os.path.exists(repo.getDir()):
             ARLog('Cloning %(repo)s git repository' % locals())
-            if not repo.ext:
-                repoURL = 'https://github.com/ARDroneSDK3/%(repo)s.git' % locals()
-            else:
-                repoURL = repo.name
-                repoURL = ARReplaceEnvVars(repoURL)
-                if repoURL is None:
-                    EXIT(1)
             rDir = repo.getDir()
             newDir = Chdir(ARPathFromHere('..'))
             ARExecute('git clone %(repoURL)s' % locals() + ' ' + rDir, failOnError=(not repo.ext))
@@ -57,7 +57,7 @@ def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
             repoDir.exit()
         failOnError = (not repo.ext) or repo.extra
         failArg = ' exitOnFailed' if nonInteractive else ''
-        ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repo.rev + failArg, failOnError=failOnError)
+        ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repoURL + ' ' + repo.rev + failArg, failOnError=failOnError)
         for patch in repo.patches:
             patchPath = ARPathFromHere(patch)
             repoDir = Chdir(repo.getDir())

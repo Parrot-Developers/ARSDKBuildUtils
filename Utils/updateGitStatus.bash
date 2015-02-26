@@ -125,8 +125,9 @@ function ARQuit
 function usage
 {
     echo "Usage:"
-    echo $0 "REPODIR REPO_REVISION"
+    echo $0 "REPODIR REMOTE_URL REPO_REVISION"
     echo " - REPODIR is the path to the repository root directory"
+	echo " - REMOTE_URL is the requested remote URL"
     echo " - REPO_REVISION is the revision to checkout."
     echo "    It can be a branch name, a tag name, a commit sha1"
     echo "    or 'DEV' (i.e. don't touch the repo)"
@@ -142,15 +143,16 @@ ME=$(which $0)
 MYDIR=$(echo $ME | sed 's:\(.*\)/.*:\1:')
 
 # Test if the parameters are correct
-if [ -z $1 ] || [ -z $2 ]; then
+if [ -z $1 ] || [ -z $2 ] || [ -z $3 ]; then
     echo "Missing args to check git repository status" | tee -a $ARLOGF
     usage
 fi
 
 REPODIR=$1
-REPO_REVISION=$2
-if [ -n $3 ]; then
-    EXIT_ON_FAILED=$3
+REPO_URL=$2
+REPO_REVISION=$3
+if [ -n $4 ]; then
+    EXIT_ON_FAILED=$4
     echo "==$EXIT_ON_FAILED =="
 fi
 
@@ -174,6 +176,63 @@ elif [ x$REPO_REVISION = xCURR_BRANCH ]; then
 fi
 
 cd $REPODIR
+
+NEED_ADD_REMOTE=NO
+SKIP_REMOTE_TEST=NO
+NEED_SET_REMOTE=NO
+
+if ! git remote show origin 2>&1 >/dev/null; then
+	echo "Missing remote origin"
+    echo "Do you want to add origin remote ($REPO_URL) ?"
+    select yn in "Yes" "No"; do
+        case $yn in
+			Yes )
+				NEED_ADD_REMOTE=YES
+				break
+				;;
+			No )
+				SKIP_REMOTE_TEST=YES
+				break
+				;;
+		esac
+	done
+fi
+
+if [ x$NEED_ADD_REMOTE = xYES ]; then
+	if ! git remote add origin $REPO_URL 2>&1 >/dev/null; then
+		echo "Error while adding remote origin"
+		RETCODE=1
+		ARQuit
+	fi
+fi
+
+if [ x$SKIP_REMOTE_TEST = xNO ]; then
+	CURRENT_REMOTE=$(git remote -vvv | grep origin | grep fetch | sed 's:[^\ \t]*[\ \t]*\([^\ \t]*\)[\ \t]*.*:\1:')
+
+	if [ ! x"$CURRENT_REMOTE" = x"$REPO_URL" ]; then
+		echo "Origin does not point to $REPO_URL, but instead to $CURRENT_REMOTE"
+		echo "Do you want to change it to $REPO_URL ?"
+		select yn in "Yes" "No"; do
+			case $yn in
+				Yes )
+					NEED_SET_REMOTE=YES
+					break
+					;;
+				No )
+					break
+					;;
+			esac
+		done
+	fi
+
+	if [ x$NEED_SET_REMOTE = xYES ]; then
+		if ! git remote set-url origin $REPO_URL 2>&1 >/dev/null; then
+			echo "Error while setting origin URL to $REPO_URL"
+			RETCODE=1
+			ARQuit
+		fi
+	fi
+fi
 
 if ! git status 2>&1 >/dev/null; then
     echo "Error while updating repo status" | tee -a $ARLOGF
