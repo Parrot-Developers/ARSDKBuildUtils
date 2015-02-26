@@ -94,7 +94,9 @@
   <repo name="Samples" rev="503fd4ce8ea78d8f70d683456ebc0215ba7c0fc2"/>
 
   <!-- External Repositories -->
-  <extrepo url="https://github.com/bagder/curl.git" rev="curl-7_36_0"/>
+  <extrepo url="https://github.com/bagder/curl.git" rev="curl-7_36_0">
+    <patchFile path="../ARSDKBuildUtils/Patches/curl-7_36_0.patch"/>
+  </extrepo>
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
     <postDownloadAction command="../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
   </extrepo>
