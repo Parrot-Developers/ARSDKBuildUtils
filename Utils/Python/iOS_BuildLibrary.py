@@ -141,17 +141,9 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                 ARLog('Unable to find a suitable iOS SDK for %(platform)s' % locals())
                 return EndDumpArgs(res=False, **args)
             SdkLower = platform.lower()
-            Llvm = iOS_getXCRunExec('llvm-gcc', SdkLower, failOnError=False)
-            Gcc = iOS_getXCRunExec('gcc', SdkLower)
-            Clang = iOS_getXCRunExec('clang', SdkLower)
+            Compiler = iOS_getXCRunExec('clang', SdkLower)
             Ar = iOS_getXCRunExec('ar', SdkLower)
             Ranlib = iOS_getXCRunExec('ranlib', SdkLower)
-            Compiler = Clang
-            if lib.ext:
-                if Llvm:
-                    Compiler = Llvm
-                else:
-                    Compiler = Gcc
 
             # Generate unique alternate install dir for libs
             ArchLibDir = ARPathFromHere('Targets/%(target)s/Build/.install_%(lib)s_%(arch)s_%(debug)s' % locals())
@@ -186,12 +178,11 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                     CPPFLAGSString = '%(CPPFLAGSString)s %(flag)s' % locals()
                     ASFLAGSString = '%(ASFLAGSString)s %(flag)s' % locals()
                     
-            if Compiler != Llvm:
-                for flag in ExtraCommonNonLlvmFlags:
-                    CFLAGSString = '%(CFLAGSString)s %(flag)s' % locals()
-                    OBJCFLAGSString = '%(OBJCFLAGSString)s %(flag)s' % locals()
-                    CPPFLAGSString = '%(CPPFLAGSString)s %(flag)s' % locals()
-                    ASFLAGSString = '%(ASFLAGSString)s %(flag)s' % locals()
+            for flag in ExtraCommonNonLlvmFlags:
+                CFLAGSString = '%(CFLAGSString)s %(flag)s' % locals()
+                OBJCFLAGSString = '%(OBJCFLAGSString)s %(flag)s' % locals()
+                CPPFLAGSString = '%(CPPFLAGSString)s %(flag)s' % locals()
+                ASFLAGSString = '%(ASFLAGSString)s %(flag)s' % locals()
             for flag in ExtraCFlags:
                 CFLAGSString = '%(CFLAGSString)s %(flag)s' % locals()
             for flag in ExtraOBJCFlags:
