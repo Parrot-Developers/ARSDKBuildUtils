@@ -44,13 +44,6 @@ import tempfile
 
 uname = ARExecuteGetStdout(["uname"], printErrorMessage=False).lower()
 
-verbose = False
-if len(sys.argv) > 1:
-    if sys.argv[1] == '-v':
-        verbose = True
-    else:
-        ARPrint('Unknown options, this script only support `-v`')
-        sys.exit(1)
 
 targets = [
     {
@@ -100,6 +93,20 @@ targets = [
         },
 ]
 
+doPrint = True
+verbose = False
+statusTarget = None
+if len(sys.argv) > 1:
+    if sys.argv[1] == '-v':
+        verbose = True
+    else:
+        statusTarget = sys.argv[1]
+        doPrint = False
+        if not statusTarget in ['Generic', 'iOS', 'Android', 'Unix']:
+            ARPrint('Unknown options, this script only support `-v`, `Generic`, `iOS`, `Android` and `Unix`')
+            sys.exit(1)
+
+
 hasColors = ARExecute('tput colors >/dev/null 2>&1', failOnError=False, printErrorMessage=False)
 
 class logcolors:
@@ -112,30 +119,34 @@ def ARCEPrint(msg, noNewLine=False):
     if verbose:
         ARPrint(msg, noNewLine=noNewLine)
 
+def ARVBPrint(msg, noNewLine=False):
+    if doPrint:
+        ARPrint(msg, noNewLine=noNewLine)
+
 def ARPrintStatus(msg, status=False, unknown=False, padTo=20):
     if unknown:
-        ARPrint(logcolors.NONE, noNewLine=True)
+        ARVBPrint(logcolors.NONE, noNewLine=True)
     elif status:
-        ARPrint(logcolors.PASS, noNewLine=True)
+        ARVBPrint(logcolors.PASS, noNewLine=True)
     else:
-        ARPrint(logcolors.FAIL, noNewLine=True)
-    ARPrint(msg, noNewLine=True)
+        ARVBPrint(logcolors.FAIL, noNewLine=True)
+    ARVBPrint(msg, noNewLine=True)
     if len(msg) < padTo:
-        ARPrint(' '*(padTo-len(msg)), noNewLine=True)
-    ARPrint(logcolors.DEF, noNewLine=True)
+        ARVBPrint(' '*(padTo-len(msg)), noNewLine=True)
+    ARVBPrint(logcolors.DEF, noNewLine=True)
 
 def ARAppendToMessage(orig, msg, leftPad=22):
     if len(orig) == 0:
         return msg
     return orig + '\n' + ' '*leftPad + msg
 
-ARPrint('-- Checking if your environment will build the ARSDK for different platforms --')
-ARPrint('')
-ARPrint('[[ ' + logcolors.PASS + 'Should work' + logcolors.DEF + ', ' + logcolors.FAIL + 'Won\'t work' + logcolors.DEF + ', ' + logcolors.NONE + 'Not tested, may work' + logcolors.DEF + ' ]]')
-ARPrint('')
+ARVBPrint('-- Checking if your environment will build the ARSDK for different platforms --')
+ARVBPrint('')
+ARVBPrint('[[ ' + logcolors.PASS + 'Should work' + logcolors.DEF + ', ' + logcolors.FAIL + 'Won\'t work' + logcolors.DEF + ', ' + logcolors.NONE + 'Not tested, may work' + logcolors.DEF + ' ]]')
+ARVBPrint('')
 
 if sys.version_info < (2, 7):
-    ARPrint(logcolors.FAIL + ' Bad python version.' + logcolors.DEF + ' The SDK requires python 2.7 or higher (python 3 versions are supported)')
+    ARVBPrint(logcolors.FAIL + ' Bad python version.' + logcolors.DEF + ' The SDK requires python 2.7 or higher (python 3 versions are supported)')
     sys.exit(0)
 
 
@@ -209,21 +220,31 @@ for t in targets:
         msg = ARAppendToMessage(msg, 'Bad platform `%s`, you need to be on %s to build the target `%s`' % (uname, t['platforms'], t['name']))
     ARCEPrint('')
     ARPrintStatus (t['name'], status, unknown)
-    ARPrint(': ', noNewLine=True)
+    t['status']  = status
+    t['unknown'] = unknown
+    ARVBPrint(': ', noNewLine=True)
     if not msg:
         msg = 'OK !'
-    ARPrint(msg)
+    ARVBPrint(msg)
     ARCEPrint('')
     if t['name'] == 'Generic':
         globalStatus = status
         if not globalStatus:
-            ARPrint('ERROR !')
+            ARVBPrint('ERROR !')
             break
 
-ARPrint('')
+ARVBPrint('')
 
 if not globalStatus:
-    ARPrint(logcolors.FAIL + 'Basic configuration is not met' + logcolors.DEF + ', the SDK3Build.py script will probably fail even before trying to build a target. Fix errors for virtual target "Generic" before launching the script')
-    ARPrint('')
+    ARVBPrint(logcolors.FAIL + 'Basic configuration is not met' + logcolors.DEF + ', the SDK3Build.py script will probably fail even before trying to build a target. Fix errors for virtual target "Generic" before launching the script')
+    ARVBPrint('')
     
-        
+
+
+if statusTarget:
+    for t in targets:
+        if t['name'] == statusTarget:
+            status = 0 if not t['unknown'] and t['status'] else 1
+            sys.exit(status)
+    sys.exit(1)
+
