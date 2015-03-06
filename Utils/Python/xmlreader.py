@@ -801,7 +801,7 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
             xpbdeps = xlib.getElementsByTagName('prebuiltdep')
             for xpbdep in xpbdeps:
                 ltargets = []
-                xtars = xdep.getElementsByTagName('validdeptar')
+                xtars = xpbdep.getElementsByTagName('validdeptar')
                 for xtar in xtars:
                     ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
                 lib.addPrebuiltDep(prebuilts.getPrebuilt(xpbdep.attributes['name'].nodeValue).ARCopy(ltargets))
