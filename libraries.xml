@@ -81,11 +81,21 @@
   </extlib>
 
   <lib name="ARSAL">
-	<dep name="openssl"/>
+    <dep name="openssl"/>
+  </lib>
+  
+  <lib name="ARNetworkAL">
+    <dep name="ARSAL"/>
+  </lib>
+  
+  <lib name="ARNetwork">
+    <dep name="ARNetworkAL"/>
   </lib>
 
   <lib name="ARDiscovery">
     <dep name="ARSAL"/>
+    <dep name="ARNetworkAL"/>
+    <dep name="ARNetwork"/>
     <prebuiltdep name="jmdns">
       <validdeptar name="Android"/>
     </prebuiltdep>
@@ -94,19 +104,11 @@
     </prebuiltdep>
   </lib>
 
-  <lib name="ARNetworkAL">
-      <dep name="ARSAL"/>
-  </lib>
-
   <lib name="ARCommands">
     <dep name="ARSAL"/>
     <configureDepFile name="Xml/generateLibARCommands.py"/>
     <configureDepFile name="Xml/*.xml"/>
     <extraConfigureFlag value="--enable-debug-commands"/>
-  </lib>
-
-  <lib name="ARNetwork">
-    <dep name="ARNetworkAL"/>
   </lib>
 
   <lib name="ARStream">
@@ -164,7 +166,7 @@
   </lib>
 
   <lib name="ARDataTransfer">
- 	  <dep name="ARDiscovery"/>
+      <dep name="ARDiscovery"/>
       <dep name="ARUtils"/>
       <dep name="ARSAL"/>
       <dep name="curl"/>
@@ -186,6 +188,14 @@
     <dep name="json"/>
     <extraConfigureFlag value="--disable-videoenc"/>
     <prebuiltdep name="sanselan-0.97-incubator"/>
+  </lib>
+  
+  <lib name="ARController">
+    <dep name="ARSAL"/>
+    <dep name="ARDiscovery"/>
+    <dep name="ARNetworkAL"/>
+    <dep name="ARNetwork"/>
+    <dep name="ARCommands"/>
   </lib>
 
 </libraries>
