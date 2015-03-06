@@ -49,9 +49,12 @@ class ARRepo:
         self.rev = revision
         self.ext = isExternal
         self.extra = isExtraRepo
+        self.forceBaseUrl = False
         self.path = None
         self.patches = []
         self.additionnalCommands = []
+    def setForceBaseUrl(self):
+        self.forceBaseUrl = True
     def getDir(self):
         if self.path:
             return ARPathFromHere(self.path)
@@ -638,6 +641,11 @@ def parseRepoXmlFile(paths):
         xrepos = xmldata.getElementsByTagName('repo')
         for xrepo in xrepos:
             repo = ARRepo(xrepo.attributes['name'].nodeValue, xrepo.attributes['rev'].nodeValue)
+            try:
+                if xrepo.attributes['forceBaseUrl'].nodeValue == 'TRUE':
+                    repo.setForceBaseUrl()
+            except:
+                pass
             xpatches = xrepo.getElementsByTagName('patchFile')
             for xpatch in xpatches:
                 repo.addPatchFile(xpatch.attributes['path'].nodeValue)

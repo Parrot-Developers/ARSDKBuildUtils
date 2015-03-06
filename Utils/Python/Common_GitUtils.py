@@ -31,11 +31,14 @@
 from ARFuncs import *
 import os
 
-def checkAllReposUpToDate(repos, MYDIR, nonInteractive=False):
+def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInteractive=False):
     print("checkAllReposUpToDate")
     for repo in repos.list:
         if not repo.ext:
-            repoURL = 'https://github.com/ARDroneSDK3/%(repo)s.git' % locals()
+            if not repo.forceBaseUrl:
+                repoURL = baseRepoUrl + repo.name + '.git'
+            else:
+                repoURL = defaultBaseRepoUrl + repo.name + '.git'
         else:
             repoURL = repo.name
             repoURL = ARReplaceEnvVars(repoURL)

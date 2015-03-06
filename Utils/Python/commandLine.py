@@ -32,6 +32,8 @@ import os
 import argparse
 from ARFuncs import *
 
+defaultBaseRepoUrl = 'https://github.com/ARDroneSDK3/'
+
 class CommandLineParser:
     "Command line options parser for ARSDK 3 build script"
     def __init__(self, targets, libraries, binaries):
@@ -52,6 +54,8 @@ class CommandLineParser:
         self.noGit = False
         self.noDeps = False
         self.threads = -1
+        self.defaultBaseRepoUrl = defaultBaseRepoUrl
+        self.repoBaseUrl = defaultBaseRepoUrl
         self.parser = argparse.ArgumentParser()
         self.init_parser()
 
@@ -68,11 +72,12 @@ class CommandLineParser:
         self.parser.add_argument('--force-clean', action="store_true", help="Wipe all targets (overrides any other setting)")
         self.parser.add_argument('--all-cleanup', action="store_true", help="Implies `--force-clean` and run all cleanup scripts in internal repositories")
         self.parser.add_argument('--doc', action="store_true", help="Generate documentation after building")
-        self.parser.add_argument('--install-doc', action="store_true", help="Implies `--doc` and copy the generated documentation to Docs repository (do not commit)")
+        self.parser.add_argument('--install-doc', action="store_true", help="Implies `--doc` and copy the generated documentation to Docs repository")
         self.parser.add_argument('--none', action="store_true", help="Do only GIT Checks, do not build / clean anything")
         self.parser.add_argument('--nogit', action="store_true", help="Do not run GIT checks")
         self.parser.add_argument('-j', type=int, help="The number of threads to use. Automatically set to the number of CPUs if not set")
         self.parser.add_argument('--nodep', action="store_true", help="Do not build deps. Use at your own risks.")
+        self.parser.add_argument('--repo-base-url', action="store", help=("Use the following base URL instead of " + defaultBaseRepoUrl))
 
     def parse(self, argv):
 
@@ -130,6 +135,8 @@ class CommandLineParser:
             self.isDebug = True
         if args.j and int(args.j) >= 0:
             self.threads = int(args.j)
+        if args.repo_base_url:
+            self.repoBaseUrl = args.repo_base_url
 
         # Fill default values if needed
         if not self.activeTargets:

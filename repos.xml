@@ -77,7 +77,7 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="17c39b4b09031158e862ac100d6283cf9859e1b2"/>
+  <repo name="Docs" rev="17c39b4b09031158e862ac100d6283cf9859e1b2" forceBaseUrl="TRUE"/>
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="c825c150d4b30cfb0850239c042ef56185f5bdea"/>
@@ -91,9 +91,9 @@
   <repo name="libARUpdater" rev="2ae878195901192a944186516854ae82443fa39f"/>
   <repo name="libARDataTransfer" rev="e90c565c667d42991017852f8ac57bcb31651751"/>
   <repo name="libARMavlink" rev="98035edabbf46e873955de2448fe5ae6829aeda5"/>
-  <repo name="Samples" rev="503fd4ce8ea78d8f70d683456ebc0215ba7c0fc2"/>
+  <repo name="Samples" rev="503fd4ce8ea78d8f70d683456ebc0215ba7c0fc2" forceBaseUrl="TRUE"/>
 
-  <repo name="curl" rev="curl-7_36_0-arsdk"/>
+  <repo name="curl" rev="curl-7_36_0-arsdk" forceBaseUrl="TRUE"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
