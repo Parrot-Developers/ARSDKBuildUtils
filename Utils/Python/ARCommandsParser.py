@@ -160,12 +160,69 @@ class ARArg:
         ret = ret + enumret
         return ret
 
+class ARCommandBuffer:
+    NON_ACK = 0
+    ACK = 1
+    HIGH_PRIO = 2
+    @staticmethod
+    def getFromString(val):
+        if val == 'NON_ACK':
+            return ARCommandBuffer.NON_ACK
+        elif val == 'ACK':
+            return ARCommandBuffer.ACK
+        elif val == 'HIGH_PRIO':
+            return ARCommandBuffer.HIGH_PRIO
+        else:
+            raise ValueError
+    @staticmethod
+    def toString(val):
+        if val == ARCommandBuffer.NON_ACK:
+            return 'NON_ACK'
+        elif val == ARCommandBuffer.ACK:
+            return 'ACK'
+        elif val == ARCommandBuffer.HIGH_PRIO:
+            return 'HIGH_PRIO'
+        else:
+            return 'Unknown'
+    
+
+class ARCommandTimeoutPolicy:
+    POP = 0
+    RETRY = 1
+    FLUSH = 2
+    @staticmethod
+    def getFromString(val):
+        if val == 'POP':
+            return ARCommandTimeoutPolicy.POP
+        elif val == 'RETRY':
+            return ARCommandTimeoutPolicy.RETRY
+        elif val == 'FLUSH':
+            return ARCommandTimeoutPolicy.FLUSH
+        else:
+            raise ValueError
+    @staticmethod
+    def toString(val):
+        if val == ARCommandTimeoutPolicy.POP:
+            return 'POP'
+        elif val == ARCommandTimeoutPolicy.RETRY:
+            return 'RETRY'
+        elif val == ARCommandTimeoutPolicy.FLUSH:
+            return 'FLUSH'
+        else:
+            return 'Unknown'
+
 class ARCommand:
     "Represent a command"
     def __init__(self, cmdName):
         self.name     = cmdName
         self.comments = []
         self.args     = []
+        self.buf      = ARCommandBuffer.ACK
+        self.timeout  = ARCommandTimeoutPolicy.POP
+    def setBufferType(self, btype):
+        self.buf      = btype
+    def setTimeoutPolicy(self, pol):
+        self.timeout  = pol
     def addCommentLine(self, newCommentLine):
         self.comments.append(newCommentLine)
     def addArgument(self, newArgument):
@@ -312,6 +369,19 @@ def parseXml(fileName, projectName, previousProjects):
                     ARPrint ('Command `' + cmd.name + '` appears multiple times in `' + proj.name + '.' + currentClass.name + '` !')
                     ARPrint (' --> Commands must have unique names in a given class (but can exist in multiple classes)')
                     EXIT (1)
+            # Try to get the suggested buffer type for the command
+            try:
+                cmdBufferType = ARCommandBuffer.getFromString(command.attributes["buffer"].nodeValue)
+                currentCommand.setBufferType(cmdBufferType)
+            except KeyError:
+                pass
+                
+            # Try to get the suggested timeout policy for the command
+            try:
+                cmdTimeoutPolicy = ARCommandTimeoutPolicy.getFromString(command.attributes["timeout"].nodeValue)
+                currentCommand.setTimeoutPolicy(cmdTimeoutPolicy)
+            except KeyError:
+                pass
             # Get command comments
             commandComments = command.firstChild.data.splitlines ()
             for commandComm in commandComments:
