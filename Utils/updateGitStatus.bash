@@ -181,7 +181,7 @@ NEED_ADD_REMOTE=NO
 SKIP_REMOTE_TEST=NO
 NEED_SET_REMOTE=NO
 
-if ! git remote show origin 2>&1 >/dev/null; then
+if ! git remote -v 2>&1 | grep origin >/dev/null 2>&1; then
 	echo "Missing remote origin"
     echo "Do you want to add origin remote ($REPO_URL) ?"
     select yn in "Yes" "No"; do
@@ -207,7 +207,7 @@ if [ x$NEED_ADD_REMOTE = xYES ]; then
 fi
 
 if [ x$SKIP_REMOTE_TEST = xNO ]; then
-	CURRENT_REMOTE=$(git remote -vvv | grep origin | grep fetch | sed 's:[^[:blank:]]*[[:blank:]]*\([^[:blank:]]*\)[[:blank:]]*.*:\1:')
+	CURRENT_REMOTE=$(git remote -v | grep origin | grep fetch | sed 's:[^[:blank:]]*[[:blank:]]*\([^[:blank:]]*\)[[:blank:]]*.*:\1:')
 
 	if [ ! x"$CURRENT_REMOTE" = x"$REPO_URL" ]; then
 		echo "Origin does not point to $REPO_URL, but instead to $CURRENT_REMOTE"
