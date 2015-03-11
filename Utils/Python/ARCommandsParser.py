@@ -160,6 +160,31 @@ class ARArg:
         ret = ret + enumret
         return ret
 
+class ARCommandListType:
+    NONE = 0
+    LIST = 1
+    MAP = 2
+    @staticmethod
+    def getFromString(val):
+        if val == 'NONE':
+            return ARCommandListType.NONE
+        elif val == 'LIST':
+            return ARCommandListType.LIST
+        elif val == 'MAP':
+            return ARCommandListType.MAP
+        else:
+            raise ValueError
+    @staticmethod
+    def toString(val):
+        if val == ARCommandListType.NONE:
+            return 'NONE'
+        elif val == ARCommandListType.LIST:
+            return 'LIST'
+        elif val == ARCommandListType.MAP:
+            return 'MAP'
+        else:
+            return 'Unknown'
+
 class ARCommandBuffer:
     NON_ACK = 0
     ACK = 1
@@ -219,6 +244,9 @@ class ARCommand:
         self.args     = []
         self.buf      = ARCommandBuffer.ACK
         self.timeout  = ARCommandTimeoutPolicy.POP
+        self.listtype = ARCommandListType.NONE
+    def setListType(self, ltype):
+        self.listtype = ltype
     def setBufferType(self, btype):
         self.buf      = btype
     def setTimeoutPolicy(self, pol):
@@ -369,6 +397,7 @@ def parseXml(fileName, projectName, previousProjects):
                     ARPrint ('Command `' + cmd.name + '` appears multiple times in `' + proj.name + '.' + currentClass.name + '` !')
                     ARPrint (' --> Commands must have unique names in a given class (but can exist in multiple classes)')
                     EXIT (1)
+
             # Try to get the suggested buffer type for the command
             try:
                 cmdBufferType = ARCommandBuffer.getFromString(command.attributes["buffer"].nodeValue)
@@ -382,6 +411,14 @@ def parseXml(fileName, projectName, previousProjects):
                 currentCommand.setTimeoutPolicy(cmdTimeoutPolicy)
             except KeyError:
                 pass
+
+            # Try to get the list type of the command
+            try:
+                cmdListType = ARCommandListType.getFromString(command.attributes["listtype"].nodeValue)
+                currentCommand.setListType(cmdListType)
+            except KeyError:
+                pass
+
             # Get command comments
             commandComments = command.firstChild.data.splitlines ()
             for commandComm in commandComments:
