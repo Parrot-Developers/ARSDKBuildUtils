@@ -170,7 +170,7 @@ if parser.isForceClean:
 #  - If on a branch, pull it
 #
 if not parser.noGit:
-    checkAllReposUpToDate(repos, MYDIR, parser.repoBaseUrl, parser.defaultBaseRepoUrl)
+    checkAllReposUpToDate(repos, MYDIR, parser.repoBaseUrl, parser.defaultBaseRepoUrl, extraScripts=parser.extraGitScripts)
 else:
     ARLog('Skipping git checks')
 

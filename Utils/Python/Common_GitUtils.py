@@ -31,8 +31,7 @@
 from ARFuncs import *
 import os
 
-def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInteractive=False):
-    print("checkAllReposUpToDate")
+def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInteractive=False, extraScripts=[]):
     for repo in repos.list:
         if not repo.ext:
             if not repo.forceBaseUrl:
@@ -60,6 +59,9 @@ def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInte
             repoDir.exit()
         failOnError = (not repo.ext) or repo.extra
         failArg = ' exitOnFailed' if nonInteractive else ''
+        if not repo.ext or repo.extra:
+            for scr in extraScripts:
+                ARExecute(scr + ' ' + repo.getDir(), failOnError=False)
         ARExecute(gitscript + ' ' + repo.getDir() + ' ' + repoURL + ' ' + repo.rev + failArg, failOnError=failOnError)
         for patch in repo.patches:
             patchPath = ARPathFromHere(patch)

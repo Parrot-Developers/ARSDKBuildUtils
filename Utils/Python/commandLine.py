@@ -56,6 +56,7 @@ class CommandLineParser:
         self.threads = -1
         self.defaultBaseRepoUrl = defaultBaseRepoUrl
         self.repoBaseUrl = defaultBaseRepoUrl
+        self.extraGitScripts = []
         self.parser = argparse.ArgumentParser()
         self.init_parser()
 
@@ -78,6 +79,8 @@ class CommandLineParser:
         self.parser.add_argument('-j', type=int, help="The number of threads to use. Automatically set to the number of CPUs if not set")
         self.parser.add_argument('--nodep', action="store_true", help="Do not build deps. Use at your own risks.")
         self.parser.add_argument('--repo-base-url', action="store", help=("Use the following base URL instead of " + defaultBaseRepoUrl))
+        self.parser.add_argument('--extra-git-script', action="append", help="Path (relative to ARSDKBuildUtils directory) to an extra script which will be run before updating git repo (with path as its first argument)")
+
 
     def parse(self, argv):
 
@@ -137,6 +140,8 @@ class CommandLineParser:
             self.threads = int(args.j)
         if args.repo_base_url:
             self.repoBaseUrl = args.repo_base_url
+        if args.extra_git_script:
+            self.extraGitScripts = args.extra_git_script[:]
 
         # Fill default values if needed
         if not self.activeTargets:
