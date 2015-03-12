@@ -1,0 +1,749 @@
+#!/usr/bin/env python
+import sys
+import os
+import re
+import subprocess
+
+MYDIR=os.path.abspath(os.path.dirname(sys.argv[0]))
+if '' == MYDIR:
+    MYDIR=os.getcwd()
+    
+sys.path.append('%(MYDIR)s/../../Utils/Python' % locals())
+from ARFuncs import *
+
+####################################
+
+class OpensslConfig:
+    def __init__ (self):
+        self.debug = False
+        self.repo_path = None
+        self.build_path = None
+        self.install_path = None
+        self.install_framework = None
+        self.install_java = None
+        #
+        self.type = None
+        self.arch = None
+        self.arch_prefix = None
+        self.opt_ops=''
+        self.opt_cc=''
+        self.opt_ar=''
+        self.opt_cflags=''
+        self.opt_ldflags=''
+        self.opt_oscompiler=''
+        self.opt_host=None
+        self.opt_lib_dir=None
+        self.opt_prefix=None
+
+config = OpensslConfig() 
+filePath = sys.argv.pop(0)
+args = sys.argv
+retCode=0
+orgArgs = ''
+
+####################################
+
+while len(args) > 0:
+    arg = args.pop (0)
+    orgArgs = orgArgs + ' ' + arg
+    #
+    # get arg
+    spaceIndex = arg.find(' ')
+    if spaceIndex != -1:
+        equalIndex = arg.find('=')
+        arg = arg[:equalIndex+1] + '"' + arg[equalIndex+1:] +'"'
+    #
+    print 'ARG ' + arg
+    if arg.startswith('--enable-debug'):
+        config.debug = True
+    if arg.startswith('--host='):
+        config.opt_host = arg.replace('--host=', '')
+    if arg.startswith('--prefix='):
+        config.opt_prefix = arg.replace('--prefix=', '')
+    if arg.startswith('--libdir='):
+        config.opt_lib_dir = arg.replace('--libdir=', '')
+        
+    if arg.startswith('CC='):
+        config.opt_cc = arg + ' \\\n'
+    if arg.startswith('AR='):
+        config.opt_ar = arg + ' \\\n'
+    
+    if arg.startswith('CCAS='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('RANLIB='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+
+    if arg.startswith('CFLAGS='):
+        config.opt_cflags = arg
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('CPPFLAGS='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('OBJCFLAGS='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('CCASFLAGS='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('OBJC='):
+        config.opt_ops = config.opt_ops + arg + ' \\\n'
+    if arg.startswith('LDFLAGS='):
+        config.opt_ldflags = arg
+
+#end of while len(args) > 0
+orgArgs = orgArgs + '\n'
+
+####################################
+# FunctionS openssl
+####################################
+"""
+KnownArchsIOS =     [{ 'arch' : 'arm',  'eabi' : 'armeabi',     'host' : 'arm-linux-androideabi' },
+                    { 'arch' : 'arm',  'eabi' : 'armeabi-v7a', 'host' : 'arm-linux-androideabi' },
+                    { 'arch' : 'mips', 'eabi' : 'mips',        'host' : 'mipsel-linux-android' },
+                    { 'arch' : 'x86',  'eabi' : 'x86',         'host' : 'i686-linux-android' }]
+            
+KnownArchsAndroid = [{ 'arch':'armv7', 'platform':'iPhoneOS', 'minos':'iphoneos' },
+                    { 'arch':'armv7s', 'platform':'iPhoneOS', 'minos':'iphoneos' },
+                    { 'arch':'arm64', 'platform':'iPhoneOS', 'minos':'iphoneos' },
+                    { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+"""
+            
+def Openssl_run_command(command):
+    print command
+    p = subprocess.Popen(command,
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
+    return iter(p.stdout.readline, b'')
+        
+def OpensslBuildCheckArch(config):
+    ret = 0
+    #print 'arch ' + config.arch
+    pos = config.opt_cflags.find('-arch ')
+    if pos != -1:
+        pos2 = pos + len('-arch ')
+        pos3 = config.opt_cflags.find(' ', pos2)
+        if pos3 != -1:
+            config.arch = config.opt_cflags[pos2 : pos3]
+    else:
+        pos = config.opt_cflags.find('-march=')
+        if pos != -1:
+            pos2 = pos + len('-march=')
+            pos3 = config.opt_cflags.find(' ', pos2)
+            if pos3 != -1:
+                config.arch = config.opt_cflags[pos2 : pos3]
+        else:
+            config.arch = ''
+        
+    if config.opt_host is None:
+        config.type = 'unix'
+        out = Openssl_run_command('uname')
+        for line in out:
+            l = line.rstrip('\n')
+            if l == 'Darwin':
+                config.arch = l
+                print config.arch
+            elif l == 'Linux':
+                config.arch = l
+                print config.arch
+            else:
+                config.arch = 'native'
+        config.arch_prefix = config.arch
+        
+    elif config.opt_host.find('apple') != -1:
+        config.type = 'apple'
+        config.arch_prefix = config.arch
+
+    elif config.opt_host.find('android') != -1:
+        config.type = 'android'
+        if config.opt_host == 'i686-linux-android':
+            #config.arch = 'x86'
+            if config.arch == '':
+                config.arch = 'i686'
+            config.arch_prefix = 'x86'
+        elif config.opt_host == 'mipsel-linux-android':
+            #config.arch = 'mips'
+            config.arch_prefix = 'mips'
+        elif config.opt_host == 'arm-linux-androideabi':
+            if config.arch == 'armv7-a':
+                #config.arch = 'arm'
+                config.arch_prefix = 'armeabi-v7a'
+            else:
+                #config.arch = 'arm'
+                config.arch_prefix = 'armeabi'
+        else:
+            ret = 1
+        #Java
+    else:
+        ret = 1
+    
+    print 'TYPE: ' + config.type + ', ARCH: ' + config.arch
+    return ret
+
+
+def OpensslBuildPath(config, MYDIR):
+    print '---------------------------------'
+    print 'Build paths'
+    ret = 0
+    
+    ret = OpensslBuildCheckArch(config)
+    if ret != 0:
+        return 1
+    
+    if config.type == 'unix':
+        config.build_path = os.path.abspath(config.opt_prefix + '/../Build/libopenssl')
+        if config.debug:
+            config.build_path = config.build_path + '_dbg'
+        config.install_path = os.path.abspath(config.opt_prefix)
+    elif config.type == 'apple':
+        config.build_path = os.path.abspath(config.opt_lib_dir.replace('.install_', 'lib').replace('_False', '').replace('_True', '_dbg'))
+        config.install_path = os.path.abspath(config.build_path + '/../../Install')
+        config.install_framework = os.path.abspath(config.opt_lib_dir)
+    elif config.type == 'android':
+        config.build_path = os.path.abspath(config.opt_prefix + '/../../Build/libopenssl_' + config.arch_prefix)
+        config.install_path = os.path.abspath(config.opt_prefix)
+        config.install_java = os.path.abspath(config.opt_prefix + '/../../Build/libopenssl_Java')
+    else:
+        return 1
+    
+    #/Users/David/github/ARSDKBuildUtils/ConfigureWrapper/openssl
+    config.repo_path = os.path.abspath('%(MYDIR)s/../../../openssl/openssl-1.0.2' % locals())
+    config.opt_prefix = '--prefix=' + config.install_path
+    
+    print 'openssl: ' + config.repo_path
+    print 'Local: ' + MYDIR
+    print 'Build: ' + config.build_path
+    print 'Install: ' + config.install_path
+    print 'prefix: ' + config.opt_prefix
+    if config.install_framework is not None:
+        print 'Framework: ' + config.install_framework
+    if config.install_java is not None:
+        print 'openssl_Java: ' + config.install_java
+    #
+    #print 'OBJECT ', vars(config)
+    return 0
+    
+def OpensslCleanDirs(config):
+    print '---------------------------------'
+    print 'Clean Install Dir: ' + config.build_path
+    if config.build_path.find('/ARSDKBuildUtils/') == -1:
+        return 1
+    
+    cmd = 'mkdir ' + config.build_path
+    #print cmd
+    ret = os.system(cmd)
+    print 'mkdir ', ret
+    
+    cmd = 'rm -rf ' + config.build_path + '/*'
+    #print cmd
+    ret = os.system(cmd)
+    print 'rm -rf /* ', ret
+
+    cmd = 'rm -rf ' + config.install_path + '/ssl'
+    #print cmd
+    ret = os.system(cmd)
+    print 'rm -rf /ssl ', ret
+
+    cmd = 'rm -rf ' + config.install_path + '/include/openssl'
+    #print cmd
+    ret = os.system(cmd)
+    print 'rm -rf /include/openssl ', ret
+
+    cmd = 'rm -f ' + config.install_path + '/bin/openssl'
+    ret = os.system(cmd)
+    print 'rm -rf /bin/openssl ', ret
+
+    cmd = 'rm -rf ' + config.install_path + '/ssl'
+
+    cmd = 'rm -f ' + config.install_path + '/lib/libcrypto.* ' + config.install_path + '/lib/libssl.*'
+    ret = os.system(cmd)
+    print 'rm libcrypto libssl a,so,la,dylib', ret
+ 
+    if config.type == 'apple':
+        cmd = 'mkdir ' + config.install_framework
+        ret = os.system(cmd)
+        print 'mkdir', ret
+        #
+        cmd = 'rm -rf ' + config.install_framework + '/*'
+        ret = os.system(cmd)
+        print 'rm framework/*', ret
+    
+        lib_path = config.install_path + '/lib'
+        os.system('rm -f ' + lib_path + '/libcrypto_' + config.arch + '.a')
+        os.system('rm -f ' + lib_path + '/libssl_' + config.arch + '.a')
+        os.system('rm -f ' + lib_path + '/libopenssl_' + config.arch + '.a')
+        print 'rm libs ' + config.arch
+    if config.type == 'android':
+        lib_path = config.install_path + '/lib'
+        os.system('rm -f ' + lib_path + '/libcrypto_*.so')
+        os.system('rm -f ' + lib_path + '/libssl_*.so')
+        #
+        print 'rm -f ' + config.install_java + '/lib/' + config.arch_prefix + '/libcrypto.so'
+        os.system('rm -f ' + config.install_java + '/lib/' + config.arch_prefix + '/libcrypto.so')
+        os.system('rm -f ' + config.install_java + '/lib/' + config.arch_prefix + '/libssl.so')
+        os.system('rm -f ' + config.install_java + '/libs/' + config.arch_prefix + '/libcrypto.so')
+        os.system('rm -f ' + config.install_java + '/libs/' + config.arch_prefix + '/libssl.so')
+
+    return 0
+    
+def OpensslCopySources(config):
+    print '---------------------------------'
+    print 'Copy sources to Build dir'
+    cmd = 'cp -r ' + config.repo_path + '/* ' + config.build_path
+    #print cmd
+    ret = os.system(cmd)
+    print 'cp -r', ret
+    return ret
+
+def OpensslChangeDirToBuildPath(config):
+    print '---------------------------------'
+    print 'Change dir to Build dir '
+    print config.build_path
+    #
+    os.system('mkdir -p ' + config.build_path)
+    os.system('mkdir -p ' + config.install_path)
+    #
+    old = os.getcwd()
+    os.chdir(config.build_path)
+    path = os.getcwd()
+    ret = 0
+    print 'getcwd ' + path
+    if old == path:
+        ret = 1
+    print 'cd ', ret
+    return ret
+    
+def OpensslConfigure(config):
+    ret = 0
+    if config.opt_host is None:
+        ret = OpensslConfigureUnix(config)
+    elif config.opt_host.find('apple') != -1:
+        ret = OpensslConfigureIOS(config)
+    elif config.opt_host.find('android') != -1:
+        ret = OpensslConfigureAndroid(config)
+    else:
+        ret = 1
+    return ret
+
+def OpensslConfigureUnix(config):
+    print '---------------------------------'
+    print 'Configure Unix'
+
+    #cmd = config.opt_cflags + ' \\\n'
+    if config.arch == 'Darwin':
+        #darwin64-x86_64-cc
+        cmd = config.opt_cflags + ' \\\n'
+        cmd = cmd + './Configure darwin64-x86_64-cc shared threads zlib \\\n'
+        cmd = cmd + config.opt_prefix + ' \\\n'
+        cmd = cmd + '-DPIC'
+        #print cmd
+        cmd = cmd + '\nmake depend'
+        cmd = cmd + '\nmake'
+        cmd = cmd + '\nmake install'  
+        print cmd
+        ret = os.system(cmd)
+        print './Configure, make, make install ', ret
+    else:
+        # -DOPENSSL_NO_ASM
+        cmd = cmd + './config shared threads zlib \\\n'
+        cmd = cmd + config.opt_prefix + ' \\\n'
+        cmd = cmd + '-DPIC'
+        #print cmd
+        cmd = cmd + '\nmake depend'
+        cmd = cmd + '\nmake'
+        cmd = cmd + '\nmake install'  
+        print cmd
+        ret = os.system(cmd)
+        print './Configure, make, make install ', ret
+    
+    #if ret == 0:
+    #    print '---------------------------------'
+    #    print 'Patch Makefile '
+    #    cflag = config.opt_cflags.replace('CFLAGS=', 'CFLAG=').replace('\"', '')
+    #    cmd = 'sed -ie \"s:^CFLAG=:' + cflag + ':\" Makefile'
+    #    print cmd
+    #    ret = os.system(cmd)
+
+    #if ret == 0:
+    #    print '---------------------------------'
+    #    cmd = 'make'
+    #    cmd = cmd + '\nmake install'  
+    #    print cmd
+    #    ret = os.system(cmd)
+    #    print 'make, make install ', ret
+    
+    return 0
+    
+"""
+ANDROID_SDK_PATH=/Users/David/dev/sdk/adt-bundle-mac-x86_64/sdk
+ANDROID_TOOLS_ARM=/Users/David/dev/sdk/arm-standalone/bin
+ANDROID_TOOLS_MIPS=/Users/David/dev/sdk/mips-standalone/bin
+ANDROID_TOOLS_X86=/Users/David/dev/sdk/x86-standalone/bin
+"""
+def OpensslEnvVarsAndroid(config):
+    tool_chain = ''
+    tool = ''
+    if config.arch_prefix == 'x86':
+        opt_oscompiler = 'android-x86'
+        tool_chain = '$ANDROID_TOOLS_X86'
+        tool = 'i686-linux-android'
+    elif config.arch_prefix == 'mips':
+        opt_oscompiler = 'android-mips'
+        tool_chain = '$ANDROID_TOOLS_MIPS'
+        tool = 'mipsel-linux-android'
+    elif config.arch_prefix == 'armeabi':
+        opt_oscompiler = 'android'
+        tool_chain = '$ANDROID_TOOLS_ARM'
+        tool = 'arm-linux-androideabi'
+    elif config.arch_prefix == 'armeabi-v7a':
+        opt_oscompiler = 'android-armv7'
+        tool_chain = '$ANDROID_TOOLS_ARM'
+        tool = 'arm-linux-androideabi'
+    
+    print 'ARCH_PREFIX: ' + config.arch_prefix + ', TOOL_CHAIN: ' + tool_chain + ', TOOL: ' + tool
+    tool_chain_base = tool_chain + '/' + tool
+    opt_cc = 'CC=' +tool_chain_base + '-gcc'
+    opt_cxx= 'CXX=' + tool_chain_base + '-g++'
+    opt_link = 'LINK=' + tool_chain_base + '-g++'
+    opt_ld = 'LD=' + tool_chain_base + '-ld'
+    opt_ar = 'AR=' + tool_chain_base + '-ar'
+    opt_ranlib = 'RANLIB=' + tool_chain_base + '-ranlib'
+    opt_strip = 'STRIP=' + tool_chain_base + '-strip'
+
+    op_cflags = ' -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64'
+    op_cxxflags = ' -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64 -frtti -fexceptions'
+    op_d = ' -DPIC'
+
+    if config.arch_prefix == 'x86':
+        op_march = ' -march=' + config.arch + ' -msse3 -mstackrealign -mfpmath=sse'
+        #op_d = ' -DPIC'
+        #Variables
+        opt_arch_flags = 'ARCH_FLAGS=\"' + op_march + '\"'
+        opt_arch_link = 'ARCH_LINK='            
+        opt_cppflags = 'CPPFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_cxxflags = 'CXXFLAGS=\"' + op_march + op_cxxflags + '\"'
+        opt_cflags = 'CFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_ldflags = 'LDFLAGS='
+    elif config.arch_prefix == 'mips':
+        op_march = ' -march=' + config.arch
+        #op_d = ' -DPIC -DOPENSSL_NO_ASM'
+        #Variables
+        opt_arch_flags = 'ARCH_FLAGS=\"' + op_march + '\"'
+        opt_arch_link = 'ARCH_LINK='            
+        opt_cppflags = 'CPPFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_cxxflags = 'CXXFLAGS=\"' + op_march + op_cxxflags + '\"'
+        opt_cflags = 'CFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_ldflags = 'LDFLAGS='
+    elif config.arch_prefix == 'armeabi':
+        op_march = ' -march=' + config.arch + ' -mthumb'
+        #op_d = ' -DPIC -DOPENSSL_NO_ASM'
+        #op_d = ''
+        #Variables
+        opt_arch_flags = 'ARCH_FLAGS=\"' + op_march + '\"'
+        opt_arch_link = 'ARCH_LINK='            
+        opt_cppflags = 'CPPFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_cxxflags = 'CXXFLAGS=\"' + op_march + op_cxxflags + '\"'
+        opt_cflags = 'CFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_ldflags = 'LDFLAGS='
+    elif config.arch_prefix == 'armeabi-v7a':
+        op_march = ' -march=' + config.arch + ' -mfloat-abi=softfp -mfpu=vfpv3-d16'
+        #op_d = ' -DPIC -DOPENSSL_NO_ASM'
+        #Variables
+        opt_arch_flags = 'ARCH_FLAGS=\"' + op_march + '\"'
+        opt_arch_link = 'ARCH_LINK=\"-march=' + config.arch + ' -Wl,--fix-cortex-a8\"'            
+        opt_cppflags = 'CPPFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_cxxflags = 'CXXFLAGS=\"' + op_march + op_cxxflags + '\"'
+        opt_cflags = 'CFLAGS=\"' + op_march + op_cflags + '\"'
+        opt_ldflags = 'LDFLAGS=\"-march=' + config.arch + ' -Wl,--fix-cortex-a8\"'
+    else:
+        #op_d = ' -DPIC -DOPENSSL_NO_ASM'
+        #Variables
+        opt_arch_flags = 'ARCH_FLAGS=\"-march=' + config.arch + ' \"'
+        opt_arch_link = 'ARCH_LINK= '
+        opt_cppflags = 'CPPFLAGS=' + config.opt_cflags.replace('CFLAGS=', '')
+        opt_cxxflags = 'CXXFLAGS=' + config.opt_cflags.replace('CFLAGS=', '')
+        opt_cflags = 'CFLAGS=' + config.opt_cflags.replace('CFLAGS=', '')
+        opt_ldflags = 'LDFLAGS=' + config.opt_ldflags.replace('LDFLAGS=', '')
+    #
+    cmd = opt_cc + ' \\\n'
+    cmd = cmd + opt_cxx + ' \\\n'
+    cmd = cmd + opt_link + ' \\\n'
+    cmd = cmd + opt_ld + ' \\\n'
+    cmd = cmd + opt_ar + ' \\\n'
+    cmd = cmd + opt_ranlib + ' \\\n'
+    cmd = cmd + opt_strip + ' \\\n'
+    cmd = cmd + opt_arch_flags + ' \\\n'
+    cmd = cmd + opt_arch_link + ' \\\n'
+    cmd = cmd + opt_cppflags + ' \\\n'
+    cmd = cmd + opt_cxxflags + ' \\\n'
+    cmd = cmd + opt_cflags + ' \\\n'
+    cmd = cmd + opt_ldflags
+    #print cmd
+    return (opt_oscompiler, op_d, cmd)
+
+def OpensslConfigureAndroid(config):
+    print '---------------------------------'
+    print 'Configure Android'
+    (opt_oscompiler, op_d, cmd) = OpensslEnvVarsAndroid(config)
+    cmd = cmd + ' \\\n' 
+    cmd = cmd + './Configure ' + opt_oscompiler + ' shared zlib \\\n' 
+    cmd = cmd + config.opt_prefix + op_d
+    print '---------------------------------'
+    cmd = cmd + '\nmake'
+    cmd = cmd + '\nmake install'  
+    print cmd
+    ret = os.system(cmd)
+    print './Configure, make, make install ', ret
+    #
+    return 0
+
+def OpensslConfigureIOS(config):
+    print '---------------------------------'
+    print 'Configure iOS'
+    if config.arch == 'i386':
+        opt_oscompiler = 'os/compiler:darwin-i386-cc'
+        #'darwin64-x86_64-cc'
+    else:
+        opt_oscompiler = 'os/compiler:iphoneos-cross'
+    #
+    cmd = config.opt_ops
+    cmd = cmd + config.opt_cc
+    cmd = cmd + config.opt_ar 
+    cmd = cmd + './Configure ' + config.opt_prefix + ' \\\n'
+    cmd = cmd + '-DOPENSSL_NO_ASM zlib \\\n'
+    cmd = cmd + opt_oscompiler
+    print cmd
+    ret = os.system(cmd)
+    print './Configure ', ret
+    #
+    if ret == 0:
+        print '---------------------------------'
+        print 'Patch Makefile '
+        cflag = config.opt_cflags.replace('CFLAGS=', 'CFLAG=').replace('\"', '')
+        cmd = 'sed -ie \"s:^CFLAG=:' + cflag + ':\" Makefile'
+        print cmd
+        ret = os.system(cmd)
+    if ret == 0:
+        print '---------------------------------'
+        cmd = 'make'
+        cmd = cmd + '\nmake install'  
+        print cmd
+        ret = os.system(cmd)
+        print 'make, make install ', ret
+
+    return ret
+
+def OpensslMakeInstallPlateform(config):
+    if config.type == 'unix':
+        ret = OpensslMakeInstallPlateformUnix(config)
+    elif config.type == 'apple':
+        ret = OpensslMakeInstallPlateformIOS(config)
+    elif config.type == 'android':
+        ret = OpensslMakeInstallPlateformAndroid(config)
+    else:
+        ret = 1
+            
+    return ret
+
+def OpensslMakeInstallPlateformUnix(config):
+    lib_path = config.install_path + '/lib'
+    #
+    cmd = 'cp ' + lib_path + '/libcrypto.dylib ' + lib_path + '/libcrypto.la'
+    ret = os.system(cmd)
+    print 'cp libopenssl la', ret
+    cmd = 'cp ' + lib_path + '/libssl.dylib ' + lib_path + '/libssl.la'
+    ret = os.system(cmd)
+    print 'cp libssl la', ret
+    return 0
+    
+def OpensslMakeInstallPlateformIOS(config):
+    lib_path = config.install_path + '/lib'
+    cmd = 'libtool -static -o ' + lib_path + '/libopenssl.a ' + lib_path + '/libcrypto.a '  + lib_path + '/libssl.a'
+    ret = os.system(cmd)
+    print 'libtool libopenssl', ret
+    
+    if ret == 0:
+        cmd = 'mv ' + lib_path + '/libopenssl.a ' + config.install_framework
+        ret = os.system(cmd)
+        print 'mv libopenssl', ret
+    if ret == 0:
+        ret = OpensslMakeMultiArchIOSLib(config)
+    return ret
+
+def RplCommand(VersionName, BaseName, PathName):
+    lenDiff = len(VersionName) - len(BaseName)
+    #print 'lenDiff ', lenDiff
+    PadName = BaseName
+    for i in range(lenDiff):
+        PadName = PadName + r'\0'
+    cmd = 'rpl -e %(VersionName)s "%(PadName)s" %(PathName)s' % locals()
+    print 'CMD: ' + cmd
+    #"libcrypto.so\0\0 \0\0 \0\0\0"
+    ret = 0
+    ret = os.system(cmd)
+    print 'rpl ', ret
+    return ret
+
+def OpensslMakeInstallPlateformAndroid(config):
+    lib_path = config.install_path + '/lib'
+    #
+    ret = os.system('chmod 755 ' + lib_path + '/libcrypto.so')
+    print '755 libcrypto', ret
+    ret = os.system('chmod 755 ' + lib_path + '/libssl.so')
+    print '755 libssl', ret
+
+    #remove link libcrypto,libssl
+    ret = os.system('rm ' + lib_path + '/libcrypto.so')
+    print 'rm libcrypto so', ret
+    ret = os.system('rm ' + lib_path + '/libssl.so')
+    print 'rm libssl so', ret
+    ret = os.system('rm ' + lib_path + '/libcrypto.a')
+    print 'rm libcrypto a', ret
+    ret = os.system('rm ' + lib_path + '/libssl.a')
+    print 'rm libssl a', ret
+    ret = os.system('mv ' + lib_path + '/libcrypto.so.1.0.0 ' + lib_path + '/libcrypto.so')
+    print 'mv libcrypto so.1.0.0', ret
+    ret = os.system('mv ' + lib_path + '/libssl.so.1.0.0 ' + lib_path + '/libssl.so')
+    print 'mv libssl so.1.0.0', ret
+    #
+    #rpl
+    RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libcrypto.so')
+    RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libssl.so')
+    RplCommand('libssl.so.1.0.0', 'libssl.so', lib_path + '/libssl.so')
+    #
+    #lib
+    ret = os.system('mkdir ' + config.install_java)
+    print 'mkdir _Java', ret
+    java_lib_path = config.install_java + '/lib'
+    ret = os.system('mkdir ' + java_lib_path)
+    print 'mkdir _Java/lib', ret
+    java_lib_path = java_lib_path + '/' + config.arch_prefix
+    ret = os.system('mkdir ' + java_lib_path)
+    print 'mkdir _Java/lib/arch', ret
+    #libs
+    #java_libs_path = config.install_java + '/libs'
+    #ret = os.system('mkdir ' + java_libs_path)
+    #print 'mkdir _Java/libs', ret
+    #java_libs_path = java_libs_path + '/' + config.arch_prefix
+    #ret = os.system('mkdir ' + java_libs_path)
+    #print 'mkdir _Java/libs/arch', ret
+    #
+    #cp
+    ret = os.system('cp ' + lib_path + '/libcrypto.so ' + java_lib_path + '/libcrypto.so')
+    print 'cp libcrypto lib', ret
+    ret = os.system('cp ' + lib_path + '/libssl.so ' + java_lib_path + '/libssl.so')
+    print 'cp libssl lib', ret
+    #ret = os.system('cp ' + lib_path + '/libcrypto.so ' + java_libs_path + '/libcrypto.so')
+    #print 'cp libcrypto libs', ret
+    #ret = os.system('cp ' + lib_path + '/libssl.so ' + java_libs_path + '/libssl.so')
+    #print 'cp libssl libs', ret
+    #
+    return 0
+ 
+def OpensslMakeMultiArchIOSLib(config):
+    print '---------------------------------'
+    lib_path = config.install_path + '/lib'
+    os.system('mv ' + lib_path + '/libcrypto.a ' + lib_path + '/libcrypto_' + config.arch + '.a')
+    os.system('mv ' + lib_path + '/libssl.a ' + lib_path + '/libssl_' + config.arch + '.a')
+    os.system('mv ' + lib_path + '/libopenssl.a ' + lib_path + '/libopenssl_' + config.arch + '.a')
+    #lipo -create libssl_armv7.a libssl_arm64.a -output libssl.a
+    out = Openssl_run_command('ls ' + lib_path + '/libssl_*.a')
+    cmd = 'lipo -create '
+    for line in out:
+        #print 'line ' + line.rstrip('\n') 
+        cmd = cmd + line.rstrip('\n') + ' '
+    cmd = cmd + '-output ' + lib_path + '/libssl.a'
+    print cmd
+    ret = os.system(cmd)
+    
+    out = Openssl_run_command('ls ' + lib_path + '/libcrypto_*.a')
+    cmd = 'lipo -create '
+    for line in out:
+        #print 'line ' + line.rstrip('\n')
+        cmd = cmd + line.rstrip('\n') + ' '
+    cmd = cmd + '-output ' + lib_path + '/libcrypto.a'
+    print cmd
+    ret = os.system(cmd)
+    
+    return ret
+
+def OpensslMakeIOSFramework(config):
+    print '---------------------------------'
+    framework_path = config.install_path + '/Frameworks/libopenssl.framework'
+    cmd = 'mkdir ' + framework_path
+    ret = os.system(cmd)
+    print 'mkdir libopenssl.framework', ret
+    cmd = 'rm -rf ' + framework_path + '/*'
+    ret = os.system(cmd)
+    print 'rm libopenssl.framework', ret
+    
+    framework_headers_path = framework_path + '/Headers'
+    ret = os.system('mkdir ' + framework_headers_path)
+    print 'mkdir Headers', ret
+
+    src_headers = config.install_path + '/include/openssl'
+    cmd = 'cp -r ' + src_headers + '/*.h ' + framework_headers_path
+    ret = os.system(cmd)
+    print 'cp Headers', ret
+    
+    #cmd = 'cp ' + config.install_path + '/lib/libopenssl.a ' + framework_path + '/libopenssl'
+    cmd = 'lipo -create ' + config.install_path + '/lib/libopenssl.a ' + '-o ' + framework_path + '/libopenssl'
+    #cmd = 'ar -r ' + config.install_path + framework_path + '/libopenssl' + '/lib/libopenssl.a '
+    ret = os.system(cmd)
+    #print 'cp libopenssl', ret
+    print 'lipo ', ret
+    return ret
+
+####################################
+# Runs openssl ./configure make
+####################################
+
+retCode=0
+configuredCode=0
+
+retCode = OpensslBuildPath(config, MYDIR)
+if retCode == 0:
+    retCode = OpensslChangeDirToBuildPath(config)
+
+if retCode == 0:
+    if os.path.exists(config.build_path + '/config.log'):
+        print '---------------------------------'
+        print 'config.log already configured: ' + config.build_path + '/config.log'
+        configuredCode = 1
+
+#configuredCode = 0    
+if configuredCode == 0:
+    if retCode == 0:
+        retCode = OpensslCleanDirs(config)
+    if retCode == 0:
+        retCode = OpensslCopySources(config)
+    
+    if retCode == 0:
+        retCode = OpensslConfigure(config)
+    if retCode == 0:
+        OpensslMakeInstallPlateform(config)
+
+print 'Custom Build DONE ', retCode
+print '---------------------------------'
+
+
+####################################
+# create config.log
+####################################
+
+confdir = os.getcwd()
+configLog = open ('%(confdir)s/config.log' % locals(), 'a')
+#configLog = open ('config.log' % locals(), 'a')
+
+configPath = os.path.abspath(filePath.replace('customBuild', 'configure'))
+
+#configLog.write ("  $ "+ filePath + orgArgs)
+configLog.write ("  $ "+ configPath + orgArgs)
+
+#retCode = 1
+configLog.close ()
+
+os.chdir('%(MYDIR)s/' % locals())
+
+#error only 0, 1 code managed upper
+if retCode != 0:
+    retCode = 1
+sys.exit(retCode)
+

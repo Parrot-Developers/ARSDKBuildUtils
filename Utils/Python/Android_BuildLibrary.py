@@ -252,8 +252,10 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             if not os.path.exists(ActualOutputJarDir):
                 os.makedirs(ActualOutputJarDir)
             LibsDir = '%(ActualJavaBuildDir)s/lib' % locals()
-            ARDeleteIfExists (LibsDir)
-            os.makedirs(LibsDir)
+            if lib.customBuild is None:
+                ARDeleteIfExists (LibsDir)
+            if not os.path.exists(LibsDir):
+                os.makedirs(LibsDir)
             for archInfos in KnownArchs:
                 eabi = archInfos['eabi']
                 eabiDir = '%(LibsDir)s/%(eabi)s' % locals()

@@ -113,8 +113,13 @@
       <dep name="ARSAL"/>
       <prebuiltdep name="mavlink"/>
   </lib>
-
+  
+  <extlib name="openssl" path="../openssl/openssl-1.0.2" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
+  </extlib>
+  
   <extlib name="curl" path="../curl">
+    <dep name="openssl"/>
+      
     <extraConfigureFlag value="--disable-ares"/>
     <extraConfigureFlag value="--disable-file"/>
     <extraConfigureFlag value="--disable-ldap"/>
@@ -134,6 +139,7 @@
     <extraConfigureFlag value="--disable-ntlm-wb"/>
     <extraConfigureFlag value="--disable-tls-srp"/>
 
+    <extraConfigureFlag value="--with-ssl=%{ARSDK_INSTALL_DIR}%"/>
     <extraConfigureFlag value="--without-winssl"/>
     <extraConfigureFlag value="--without-gnutls"/>
     <extraConfigureFlag value="--without-polarssl"/>
@@ -157,14 +163,14 @@
   </lib>
 
   <lib name="ARDataTransfer">
-      <dep name="ARDiscovery"/>
+ 	  <dep name="ARDiscovery"/>
       <dep name="ARUtils"/>
       <dep name="ARSAL"/>
       <dep name="curl"/>
   </lib>
-  
+
   <lib name="ARUpdater">
- 	  <dep name="ARDiscovery"/>
+      <dep name="ARDiscovery"/>
       <dep name="ARSAL"/>
       <dep name="ARUtils"/>
       <dep name="ARDataTransfer"/>

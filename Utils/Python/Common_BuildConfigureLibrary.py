@@ -39,6 +39,8 @@ def Common_GetConfigureDir(lib):
         LibConfigureDir = lib.path + '/Build'
     elif Common_ValidAutotoolsDirectory(lib.path):
         LibConfigureDir = lib.path
+    elif lib.customBuild is not None:
+        LibConfigureDir = lib.path
     else:
         LibConfigureDir = None
     return LibConfigureDir
@@ -115,7 +117,6 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     ConfigureArgs = Common_MergeConfigureArgs(ConfigureArgs)
 
     ConfigureArgsDbg = ConfigureArgs + ['--enable-debug']
-
     
 
     # Get path for install program
@@ -129,15 +130,48 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     if LibConfigureDir is None:
         ARLog('Don\'t know how to build %(prefix)s%(lib)s for %(target)s' % locals())
         return EndDumpArgs(res=False, **args)
+    
+    # Find library custom script
+    if lib.customBuild is not None:        
+        CustomBuildPath = lib.customBuild
+        CustomBuildScript = '%(LibConfigureDir)s/../%(CustomBuildPath)s' % locals()
+        ARLog('Custom build %(CustomBuildScript)s' % locals())
+        if not os.path.exists(CustomBuildScript):
+            ARLog('Failed to customBuild check %(prefix)s%(lib)s' % locals())
+            return EndDumpArgs(res=False, **args)
 
     # Check bootstrap status of the directory
-    if not Common_CheckBootstrap(LibConfigureDir) or not os.path.exists('%(LibConfigureDir)s/configure' % locals()):
-        ARLog('Failed to bootstrap %(prefix)s%(lib)s' % locals())
-        return EndDumpArgs(res=False, **args)
+    if lib.customBuild is None:
+        if not Common_CheckBootstrap(LibConfigureDir) or not os.path.exists('%(LibConfigureDir)s/configure' % locals()):
+            ARLog('Failed to bootstrap %(prefix)s%(lib)s' % locals())
+            return EndDumpArgs(res=False, **args)
 
+    # Replace %{ARSDK_INSTALL_DIR}%
+    Argn = len(ConfigureArgs)
+    index = 0
+    while index < Argn:
+        arg = ConfigureArgs[index]
+        #print 'ARG ' + arg
+        match = re.search('%\{[a-zA-Z_]*\}%', arg)
+        if match is not None:
+            print 'MATCH ' + match.group(0)
+            print 'REPLACE ' + re.sub('%\{.*\}%', InstallDir, arg)
+            ConfigureArgs[index] = re.sub('%\{[a-zA-Z_]*\}%', InstallDir, arg)
+        index = index + 1
 
     if not clean:
         mdir = None
+        #Custom Build
+        if lib.customBuild is not None:
+            CustomBuildArg = ConfigureArgs
+            if debug:
+                CustomBuildArg = ConfigureArgsDbg
+            if not ARExecute(CustomBuildScript + ' ' + ARListAsBashArg(CustomBuildArg), failOnError=False):
+                ARLog('Failed to build %(prefix)s%(lib)s' % locals())
+                return EndDumpArgs(res=False, **args)
+            else:
+                return EndDumpArgs(res=True, **args)
+        
         if not debug:
             # Check configure(release)
             if not Common_CheckConfigure(lib, LibConfigureDir, ConfigureDir, ConfigureArgs, lib.confdeps):

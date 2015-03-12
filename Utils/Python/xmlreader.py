@@ -357,7 +357,7 @@ class ARPrebuiltList:
 
 class ARLibrary:
     "Represent a library of the ARSDK 3"
-    def __init__(self, libname, isExternal=False, extPath=""):
+    def __init__(self, libname, isExternal=False, extPath="", customBuild=None):
         self.name = libname
         self.deps = []
         self.pbdeps = []
@@ -366,6 +366,7 @@ class ARLibrary:
         self.confdeps = []
         self.targets = []
         self.soLibs = []
+        self.customBuild = customBuild
         if extPath:
             self.relativePath = extPath
         else:
@@ -405,7 +406,7 @@ class ARLibrary:
         if not firstLevel:
             func(target, self, **kwargs)
     def ARCopy(self, newTargets):
-        ret = ARLibrary(self.name, self.ext, self.relativePath)
+        ret = ARLibrary(self.name, self.ext, self.relativePath, self.customBuild)
         for cd in self.confdeps:
             ret.addConfDep(cd)
         for d in self.deps:
@@ -763,6 +764,16 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
         xlibraries = xmldata.getElementsByTagName('extlib')
         for xlib in xlibraries:
             lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
+            xdeps = xlib.getElementsByTagName('dep')
+            for xdep in xdeps:
+                ltargets = []
+                xtars = xdep.getElementsByTagName('validdeptar')
+                for xtar in xtars:
+                    ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
+                lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            if xlib.hasAttribute('customBuild') and xlib.attributes['customBuild'].nodeValue is not None:
+                print 'customBuild: ' + xlib.attributes['customBuild'].nodeValue
+                lib.customBuild = xlib.attributes['customBuild'].nodeValue
             xtargets = xlib.getElementsByTagName('validtar')
             for xtarget in xtargets:
                 lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))

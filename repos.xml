@@ -100,6 +100,9 @@
     <postDownloadAction command="../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
   </extrepo>
 
+  <!-- External tar -->
+  <webfile url="https://www.openssl.org/source/openssl-1.0.2.tar.gz" storePath="../openssl"/>
+
   <!-- Prebuilt -->
   <webfile url="http://downloads.sourceforge.net/project/jmdns/jmdns/JmDNS%203.4.1/jmdns-3.4.1.tgz" storePath="../jmdns">
     <postDownloadAction command="cd lib; jar xf jmdns.jar"/>
