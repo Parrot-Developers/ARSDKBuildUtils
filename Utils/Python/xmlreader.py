@@ -513,6 +513,7 @@ class ARBinary:
         self.path = ARPathFromHere(builddir)
         self.ext = False
         self.soLibs = []
+        self.customBuild = None
         
     def addDep(self, dep):
         if not dep in self.deps:
