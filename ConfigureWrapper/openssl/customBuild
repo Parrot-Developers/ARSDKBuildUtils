@@ -330,7 +330,8 @@ def OpensslConfigureUnix(config):
     if config.arch == 'Darwin':
         #darwin64-x86_64-cc
         cmd = config.opt_cflags + ' \\\n'
-        cmd = cmd + './Configure darwin64-x86_64-cc shared threads zlib \\\n'
+        #cmd = cmd + './Configure darwin64-x86_64-cc shared threads zlib \\\n'
+        cmd = cmd + './Configure darwin64-x86_64-cc threads zlib \\\n'
         cmd = cmd + config.opt_prefix + ' \\\n'
         cmd = cmd + '-DPIC'
         #print cmd
@@ -342,6 +343,7 @@ def OpensslConfigureUnix(config):
         print './Configure, make, make install ', ret
     else:
         # -DOPENSSL_NO_ASM
+        cmd = config.opt_cflags + ' \\\n'
         cmd = cmd + './config shared threads zlib \\\n'
         cmd = cmd + config.opt_prefix + ' \\\n'
         cmd = cmd + '-DPIC'
@@ -545,12 +547,12 @@ def OpensslMakeInstallPlateform(config):
 def OpensslMakeInstallPlateformUnix(config):
     lib_path = config.install_path + '/lib'
     #
-    cmd = 'cp ' + lib_path + '/libcrypto.dylib ' + lib_path + '/libcrypto.la'
-    ret = os.system(cmd)
-    print 'cp libopenssl la', ret
-    cmd = 'cp ' + lib_path + '/libssl.dylib ' + lib_path + '/libssl.la'
-    ret = os.system(cmd)
-    print 'cp libssl la', ret
+    #cmd = 'cp ' + lib_path + '/libcrypto.dylib ' + lib_path + '/libcrypto.la'
+    #ret = os.system(cmd)
+    #print 'cp libopenssl la', ret
+    #cmd = 'cp ' + lib_path + '/libssl.dylib ' + lib_path + '/libssl.la'
+    #ret = os.system(cmd)
+    #print 'cp libssl la', ret
     return 0
     
 def OpensslMakeInstallPlateformIOS(config):
