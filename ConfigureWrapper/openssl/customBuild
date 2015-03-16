@@ -380,27 +380,21 @@ ANDROID_TOOLS_MIPS=/Users/David/dev/sdk/mips-standalone/bin
 ANDROID_TOOLS_X86=/Users/David/dev/sdk/x86-standalone/bin
 """
 def OpensslEnvVarsAndroid(config):
-    tool_chain = ''
     tool = ''
     if config.arch_prefix == 'x86':
         opt_oscompiler = 'android-x86'
-        tool_chain = '$ANDROID_TOOLS_X86'
-        tool = 'i686-linux-android'
+        tool_chain_base = 'i686-linux-android'
     elif config.arch_prefix == 'mips':
         opt_oscompiler = 'android-mips'
-        tool_chain = '$ANDROID_TOOLS_MIPS'
-        tool = 'mipsel-linux-android'
+        tool_chain_base = 'mipsel-linux-android'
     elif config.arch_prefix == 'armeabi':
         opt_oscompiler = 'android'
-        tool_chain = '$ANDROID_TOOLS_ARM'
-        tool = 'arm-linux-androideabi'
+        tool_chain_base = 'arm-linux-androideabi'
     elif config.arch_prefix == 'armeabi-v7a':
         opt_oscompiler = 'android-armv7'
-        tool_chain = '$ANDROID_TOOLS_ARM'
-        tool = 'arm-linux-androideabi'
+        tool_chain_base = 'arm-linux-androideabi'
     
-    print 'ARCH_PREFIX: ' + config.arch_prefix + ', TOOL_CHAIN: ' + tool_chain + ', TOOL: ' + tool
-    tool_chain_base = tool_chain + '/' + tool
+    print 'ARCH_PREFIX: ' + config.arch_prefix + ', TOOL: ' + tool_chain_base
     opt_cc = 'CC=' +tool_chain_base + '-gcc'
     opt_cxx= 'CXX=' + tool_chain_base + '-g++'
     opt_link = 'LINK=' + tool_chain_base + '-g++'
