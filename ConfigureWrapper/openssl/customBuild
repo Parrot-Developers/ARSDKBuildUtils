@@ -320,6 +320,10 @@ def OpensslConfigure(config):
         ret = OpensslConfigureAndroid(config)
     else:
         ret = 1
+
+    if ret == 0:
+        ret = os.system('test ' + config.build_path + 'libssl.a') 
+        print 'text libssl.a', ret
     return ret
 
 def OpensslConfigureUnix(config):
@@ -373,12 +377,6 @@ def OpensslConfigureUnix(config):
     
     return 0
     
-"""
-ANDROID_SDK_PATH=/Users/David/dev/sdk/adt-bundle-mac-x86_64/sdk
-ANDROID_TOOLS_ARM=/Users/David/dev/sdk/arm-standalone/bin
-ANDROID_TOOLS_MIPS=/Users/David/dev/sdk/mips-standalone/bin
-ANDROID_TOOLS_X86=/Users/David/dev/sdk/x86-standalone/bin
-"""
 def OpensslEnvVarsAndroid(config):
     tool = ''
     if config.arch_prefix == 'x86':
@@ -539,14 +537,7 @@ def OpensslMakeInstallPlateform(config):
     return ret
 
 def OpensslMakeInstallPlateformUnix(config):
-    lib_path = config.install_path + '/lib'
-    #
-    #cmd = 'cp ' + lib_path + '/libcrypto.dylib ' + lib_path + '/libcrypto.la'
-    #ret = os.system(cmd)
-    #print 'cp libopenssl la', ret
-    #cmd = 'cp ' + lib_path + '/libssl.dylib ' + lib_path + '/libssl.la'
-    #ret = os.system(cmd)
-    #print 'cp libssl la', ret
+    #lib_path = config.install_path + '/lib'
     return 0
     
 def OpensslMakeInstallPlateformIOS(config):
