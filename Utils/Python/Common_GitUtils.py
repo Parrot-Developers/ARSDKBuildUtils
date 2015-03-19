@@ -78,9 +78,9 @@ def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInte
         if not os.path.exists(Dst):
             downloadOk = False
             if ARExistsInPath('wget'):
-                downloadOk = ARExecute('wget %(Url)s -O %(Dst)s' % locals(), failOnError=False)
+                downloadOk = ARExecute('wget %(Url)s -O %(Dst)s' % locals(), failOnError=True)
             elif ARExistsInPath('curl'):
-                downloadOk = ARExecute('curl -L %(Url)s -o %(Dst)s' % locals(), failOnError=False)
+                downloadOk = ARExecute('curl -L %(Url)s -o %(Dst)s' % locals(), failOnError=True)
             if downloadOk:
                 root, Ext = os.path.splitext(webfile.name)
                 spath = Chdir(webfile.storePath)
