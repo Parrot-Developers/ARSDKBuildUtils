@@ -76,8 +76,12 @@
    -->
 
 <libraries>
+  
+  <extlib name="openssl" path="../openssl/openssl-1.0.2" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
+  </extlib>
 
   <lib name="ARSAL">
+	<dep name="openssl"/>
   </lib>
 
   <lib name="ARDiscovery">
@@ -113,9 +117,6 @@
       <dep name="ARSAL"/>
       <prebuiltdep name="mavlink"/>
   </lib>
-  
-  <extlib name="openssl" path="../openssl/openssl-1.0.2" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
-  </extlib>
   
   <extlib name="curl" path="../curl">
     <dep name="openssl"/>

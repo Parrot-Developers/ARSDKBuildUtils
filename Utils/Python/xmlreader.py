@@ -741,11 +741,17 @@ def parsePrebuiltXmlFile(paths, targets):
     
         xprebuilts = xmldata.getElementsByTagName('prebuilt')
         for xpb in xprebuilts:
-            pb = ARPrebuilt(xpb.attributes['name'].nodeValue, xpb.attributes['type'].nodeValue, xpb.attributes['path'].nodeValue)
+            needToAdd = True
+            try:
+                pb = prebuilts.getPrebuilt(xpb.attributes['name'].nodeValue)
+                needToAdd = False
+            except:
+                pb = ARPrebuilt(xpb.attributes['name'].nodeValue, xpb.attributes['type'].nodeValue, xpb.attributes['path'].nodeValue)
             xtars = xpb.getElementsByTagName('validtar')
             for xtar in xtars:
                 pb.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
-            prebuilts.addPrebuilt(pb)
+            if needToAdd:
+                prebuilts.addPrebuilt(pb)
 
     return prebuilts
 
@@ -764,7 +770,12 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
 
         xlibraries = xmldata.getElementsByTagName('extlib')
         for xlib in xlibraries:
-            lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
+            needToAdd = True
+            try:
+                lib = libraries.getLib(xlib.attributes['name'].nodeValue)
+                needToAdd = False
+            except:
+                lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
             xdeps = xlib.getElementsByTagName('dep')
             for xdep in xdeps:
                 ltargets = []
@@ -795,11 +806,17 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
             xflags = xlib.getElementsByTagName('extraConfigureFlag')
             for xflag in xflags:
                 lib.addExtraConfFlag(xflag.attributes['value'].nodeValue)
-            libraries.addLib(lib)
+            if needToAdd:
+                libraries.addLib(lib)
 
         xlibraries = xmldata.getElementsByTagName('lib')
         for xlib in xlibraries:
-            lib = ARLibrary(xlib.attributes['name'].nodeValue)
+            needToAdd = True
+            try:
+                lib = libraries.getLib(xlib.attributes['name'].nodeValue)
+                needToAdd = False
+            except:
+                lib = ARLibrary(xlib.attributes['name'].nodeValue)
             xtargets = xlib.getElementsByTagName('validtar')
             for xtarget in xtargets:
                 lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
@@ -823,7 +840,8 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
             xcdeps = xlib.getElementsByTagName('configureDepFile')
             for xcdep in xcdeps:
                 lib.addConfDep(xcdep.attributes['name'].nodeValue)
-            libraries.addLib(lib)
+            if needToAdd:
+                libraries.addLib(lib)
 
     return libraries
 
@@ -842,7 +860,12 @@ def parseBinariesXmlFile(paths, targets, libraries):
 
         xbinaries = xmldata.getElementsByTagName('binary')
         for xbin in xbinaries:
-            bin = ARBinary(xbin.attributes['name'].nodeValue, xbin.attributes['pathToBuildDir'].nodeValue)
+            needToAdd = True
+            try:
+                bin = binaries.getBin(xbin.attributes['name'].nodeValue)
+                needToAdd = False
+            except:
+                bin = ARBinary(xbin.attributes['name'].nodeValue, xbin.attributes['pathToBuildDir'].nodeValue)
             xtars = xbin.getElementsByTagName('validtar')
             for xtar in xtars:
                 bin.addTarget(targets.getTarget(xtar.attributes['name'].nodeValue))
@@ -856,7 +879,8 @@ def parseBinariesXmlFile(paths, targets, libraries):
             xflags = xbin.getElementsByTagName('extraConfigureFlag')
             for xflag in xflags:
                 bin.addExtraConfFlag(xflag.attributes['value'].nodeValue)
-            binaries.addBin(bin)
+            if needToAdd:
+                binaries.addBin(bin)
 
     return binaries
 
