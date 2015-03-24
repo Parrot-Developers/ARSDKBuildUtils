@@ -341,10 +341,9 @@ def OpensslConfigureUnix(config):
         #print cmd
         cmd = cmd + '\nmake depend'
         cmd = cmd + '\nmake'
-        cmd = cmd + '\nmake install'  
         print cmd
         ret = os.system(cmd)
-        print './Configure, make, make install ', ret
+        print './Configure, make ', ret
     else:
         # -DOPENSSL_NO_ASM
         cmd = config.opt_cflags + ' \\\n'
@@ -354,10 +353,9 @@ def OpensslConfigureUnix(config):
         #print cmd
         cmd = cmd + '\nmake depend'
         cmd = cmd + '\nmake'
-        cmd = cmd + '\nmake install'  
         print cmd
         ret = os.system(cmd)
-        print './Configure, make, make install ', ret
+        print './Configure, make ', ret
     
     #if ret == 0:
     #    print '---------------------------------'
@@ -370,10 +368,9 @@ def OpensslConfigureUnix(config):
     #if ret == 0:
     #    print '---------------------------------'
     #    cmd = 'make'
-    #    cmd = cmd + '\nmake install'  
     #    print cmd
     #    ret = os.system(cmd)
-    #    print 'make, make install ', ret
+    #    print 'make, ', ret
     
     return 0
     
@@ -481,10 +478,9 @@ def OpensslConfigureAndroid(config):
     cmd = cmd + config.opt_prefix + op_d
     print '---------------------------------'
     cmd = cmd + '\nmake'
-    cmd = cmd + '\nmake install'  
     print cmd
     ret = os.system(cmd)
-    print './Configure, make, make install ', ret
+    print './Configure, make ', ret
     #
     return 0
 
@@ -517,23 +513,24 @@ def OpensslConfigureIOS(config):
     if ret == 0:
         print '---------------------------------'
         cmd = 'make'
-        cmd = cmd + '\nmake install'  
         print cmd
         ret = os.system(cmd)
-        print 'make, make install ', ret
+        print 'make ', ret
 
     return ret
 
 def OpensslMakeInstallPlateform(config):
-    if config.type == 'unix':
-        ret = OpensslMakeInstallPlateformUnix(config)
-    elif config.type == 'apple':
-        ret = OpensslMakeInstallPlateformIOS(config)
-    elif config.type == 'android':
-        ret = OpensslMakeInstallPlateformAndroid(config)
-    else:
-        ret = 1
-            
+    ret = os.system('make install')
+    print 'make install ', ret
+    if ret == 0:
+        if config.type == 'unix':
+            ret = OpensslMakeInstallPlateformUnix(config)
+        elif config.type == 'apple':
+            ret = OpensslMakeInstallPlateformIOS(config)
+        elif config.type == 'android':
+            ret = OpensslMakeInstallPlateformAndroid(config)
+        else:
+            ret = 1
     return ret
 
 def OpensslMakeInstallPlateformUnix(config):
@@ -684,6 +681,7 @@ def OpensslMakeIOSFramework(config):
 
 retCode=0
 configuredCode=0
+installedCode=0
 
 retCode = OpensslBuildPath(config, MYDIR)
 if retCode == 0:
@@ -694,6 +692,11 @@ if retCode == 0:
         print '---------------------------------'
         print 'config.log already configured: ' + config.build_path + '/config.log'
         configuredCode = 1
+    if os.path.exists(config.install_path + '/include/openssl'):
+        print '---------------------------------'
+        print 'openssl already installed'
+        installedCode = 1
+
 
 #configuredCode = 0    
 if configuredCode == 0:
@@ -701,9 +704,10 @@ if configuredCode == 0:
         retCode = OpensslCleanDirs(config)
     if retCode == 0:
         retCode = OpensslCopySources(config)
-    
     if retCode == 0:
         retCode = OpensslConfigure(config)
+
+if installedCode == 0:
     if retCode == 0:
         OpensslMakeInstallPlateform(config)
 
