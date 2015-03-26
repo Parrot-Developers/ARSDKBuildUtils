@@ -110,5 +110,8 @@
   </webfile>
   <webfile url="https://s3.amazonaws.com/json-c_releases/releases/json-c-0.9.tar.gz" storePath="../json-c"/>
   <webfile url="http://mirrors.ibiblio.org/pub/mirrors/maven2/org/apache/sanselan/sanselan/0.97-incubator/sanselan-0.97-incubator.jar" storePath="../sanselan"/>
+  
+  <extrepo url="https://github.com/troydhanson/uthash.git" rev="3022899165f32baaf67efbe79e098f0d5ba62d4f">
+  </extrepo>
 
 </repos>
