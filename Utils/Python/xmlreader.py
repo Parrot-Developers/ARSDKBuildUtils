@@ -644,6 +644,10 @@ def parseRepoXmlFile(paths):
         for xrepo in xrepos:
             repo = ARRepo(xrepo.attributes['name'].nodeValue, xrepo.attributes['rev'].nodeValue)
             try:
+                repo.setPath(xrepo.attributes['path'].nodeValue)
+            except:
+                pass
+            try:
                 if xrepo.attributes['forceBaseUrl'].nodeValue == 'TRUE':
                     repo.setForceBaseUrl()
             except:
