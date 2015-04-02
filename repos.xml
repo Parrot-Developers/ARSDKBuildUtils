@@ -81,7 +81,7 @@
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="b23e292a095bd0a0ca57f3109fc6fe83897b3fff"/>
-  <repo name="libARDiscovery" rev="a60eac78d0ea7c37118c3c3176af44a2de71aa2b"/>
+  <repo name="libARDiscovery" rev="9b73d53e6b9d1fa98a1041802906243d2d078c54"/>
   <repo name="libARNetwork" rev="0ddd781d967695f66699afab8501d355ce2f9d9c"/>
   <repo name="libARNetworkAL" rev="4a0423465ade03a9a47df9e062605283986b1d20"/>
   <repo name="libARSAL" rev="baa2466d1547393a32e75f603039492c5385e793"/>
@@ -91,7 +91,7 @@
   <repo name="libARUpdater" rev="2a34eac19ec1e069917d0a5adeedf9e02e1cd050"/>
   <repo name="libARDataTransfer" rev="715e36bfabe49faa046497a81739f7cc90a2f41b"/>
   <repo name="libARMavlink" rev="98035edabbf46e873955de2448fe5ae6829aeda5"/>
-  <repo name="ARController" path="../libARController" rev="09fd1faf8a75fe822f43835b66d9eed7ecc5c57b"/>
+  <repo name="ARController" path="../libARController" rev="d3fcd1ecdee38562cd3c118591d1f30c9b24f2e5"/>
   <repo name="Samples" rev="8b1818f5ce7bece096248c93a1c42749c75a6be7" forceBaseUrl="TRUE"/>
 
   <repo name="curl" rev="curl-7_36_0-arsdk" forceBaseUrl="TRUE"/>
