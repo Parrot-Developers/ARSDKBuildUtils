@@ -89,7 +89,7 @@ def Common_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=No
                 Path = ARReplaceEnvVars(Path)
                 if Path is None:
                     return EndDumpArgs(res=False, **args)
-                if not os.path.exists(OutputDir):
+                if not os.path.islink(OutputDir):
                     os.symlink(Path,OutputDir)
         else:
             ARLog('Do not know how to handle prebuilts of type %(Type)s' % locals())
