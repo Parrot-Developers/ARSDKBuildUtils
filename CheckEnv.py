@@ -84,7 +84,7 @@ targets = [
         'libs' : ['-llog'],
         'envs' : ['ANDROID_NDK_PATH', 'ANDROID_SDK_PATH'],
         'cmds' : [
-            {'cmd': 'android list targets | grep "API level:" | grep 19',
+            {'cmd': '$ANDROID_SDK_PATH/tools/android list targets | grep "API level:" | grep 19',
              'desc': 'Check if Android SDK 19 is installed',
              'fix': 'Missing Android SDK for API 19 (Android 4.4.2), please install it.'
              },
