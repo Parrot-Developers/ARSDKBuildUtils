@@ -53,19 +53,25 @@ def Android_AppendDepsPrebuiltAndroidMk(target, lib, mkfile, array, suffix, root
             array.append(pbName)
     
 
-def Android_CreateApplicationMk(projectRoot):
+def Android_CreateApplicationMk(projectRoot, abis):
     appMkName = '%(projectRoot)s/jni/Application.mk' % locals()
-    appMk = open(appMkName, 'w')
-    appMk.write('APP_ABI := armeabi armeabi-v7a x86 mips\n')
-    appMk.write('APP_PLATFORM := android-' + os.environ.get('AR_ANDROID_MIN_VERSION'))
+    appMkTmpName = '%(projectRoot)s/jni/Application.mk.new' % locals()
+    appMk = open(appMkTmpName, 'w')
+    appMk.write('APP_ABI := ')
+    for abi in abis:
+        appMk.write (abi + ' ')
+    appMk.write('\n')
+    appMk.write('APP_PLATFORM := android-' + os.environ.get('AR_ANDROID_MIN_VERSION') + '\n')
     appMk.close()
+    ARReplaceFileIfDifferent(appMkName, appMkTmpName)
 
 def Android_CreateAndroidManifest(projectRoot, lib):
     androidManifestName = '%(projectRoot)s/AndroidManifest.xml' % locals()
+    androidManifestTmpName = '%(projectRoot)s/AndroidManifest.xml.new' % locals()
     libLower = lib.name.lower()
     androidMinVersion = os.environ.get('AR_ANDROID_MIN_VERSION')
     androidTargetVersion = os.environ.get('AR_ANDROID_API_VERSION')
-    androidManifest = open(androidManifestName, 'w')
+    androidManifest = open(androidManifestTmpName, 'w')
     androidManifest.write('<?xml version="1.0" encoding="utf-8"?>\n')
     androidManifest.write('<manifest xmlns:android="http://schemas.android.com/apk/res/android"\n')
     androidManifest.write('    package="com.parrot.arsdk.%(libLower)s"' % locals())
@@ -78,15 +84,17 @@ def Android_CreateAndroidManifest(projectRoot, lib):
     androidManifest.write('      android:targetSdkVersion="%(androidTargetVersion)s" />\n' % locals())
     androidManifest.write('</manifest>\n')
     androidManifest.close()
+    ARReplaceFileIfDifferent(androidManifestName, androidManifestTmpName)
 
 def Android_CreateAndroidMk(target, projectRoot, installRoot, lib, debug, hasNative=True, inhouse=False):
     JniRootDir = '%(projectRoot)s/jni/' % locals()
     andMkName = '%(JniRootDir)s/Android.mk' % locals()
+    andMkTmpName = '%(JniRootDir)s/Android.mk.new' % locals()
 
     suffix = '_dbg' if debug else ''
     prebuilts = []
 
-    andMk = open(andMkName, 'w')
+    andMk = open(andMkTmpName, 'w')
     andMk.write('LOCAL_PATH := $(call my-dir)\n')
     andMk.write('\n')
     # Write prebuilt deps (use shared)
@@ -138,3 +146,4 @@ def Android_CreateAndroidMk(target, projectRoot, installRoot, lib, debug, hasNat
     andMk.write('\n')
     andMk.write('include $(BUILD_SHARED_LIBRARY)\n')
     andMk.close()
+    ARReplaceFileIfDifferent(andMkName, andMkTmpName)

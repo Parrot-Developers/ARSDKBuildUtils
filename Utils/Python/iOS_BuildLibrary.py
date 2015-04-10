@@ -65,7 +65,7 @@ def iOS_GetXcodeProject(lib):
 def iOS_HasXcodeProject(lib):
     return iOS_GetXcodeProject(lib) is not None
 
-def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False):
+def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
     args = dict(locals())
 
     StartDumpArgs(**args)
@@ -97,6 +97,13 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
 
     target.addTriedLibrary(lib)
 
+    # Check that we're building on Mac OSX
+    if not ARExecute('test $(uname) = Darwin',
+                     failOnError=False,
+                     printErrorMessage=False):
+        ARLog('Can\'t build an iOS library while not on Mac OSX (Darwin)')
+        return EndDumpArgs(res=True, **args)
+
     # iOS libraries consists of two exclusive parts
     # 1> An autotools library
     # 2> An Xcode project
@@ -105,18 +112,24 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                    { 'arch':'armv7s', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'arm64', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+    KnownEabis = [ arch['arch'] for arch in KnownArchs ]
+    ValidArchs = []
+
+    if requestedArchs:
+        ValidArchs = [ arch for arch in KnownArchs if arch['arch'] in requestedArchs ]
+        for ra in requestedArchs:
+            if ra not in KnownEabis:
+                ARLog('Error : requested arch %(ra)s is not available for target iOS' % locals())
+                ARLog('  Avaiable archs : %(KnownEabis)s' % locals())
+                return EndDumpArgs(res=False, **args)
+    if not ValidArchs:
+        ValidArchs = KnownArchs
+
+
     InstallDir    = ARPathFromHere('Targets/%(target)s/Install/' % locals())
     FrameworksDir = '%(InstallDir)s/Frameworks/' % locals()
     Framework     = '%(FrameworksDir)s/lib%(lib)s.framework' % locals()
     FrameworkDbg  = '%(FrameworksDir)s/lib%(lib)s_dbg.framework' % locals()
-
-
-    # Check that we're building on Mac OSX
-    if not ARExecute('test $(uname) = Darwin',
-                     failOnError=False,
-                     printErrorMessage=False):
-        ARLog('Can\'t build an iOS library while not on Mac OSX (Darwin)')
-        return EndDumpArgs(res=True, **args)
 
 
     # Build the autotools part
