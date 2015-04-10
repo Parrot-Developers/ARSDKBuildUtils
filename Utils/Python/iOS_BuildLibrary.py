@@ -128,8 +128,12 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
 
     InstallDir    = ARPathFromHere('Targets/%(target)s/Install/' % locals())
     FrameworksDir = '%(InstallDir)s/Frameworks/' % locals()
-    Framework     = '%(FrameworksDir)s/lib%(lib)s.framework' % locals()
-    FrameworkDbg  = '%(FrameworksDir)s/lib%(lib)s_dbg.framework' % locals()
+
+    libLower = lib.name.lower()
+    libPrefix = 'lib' if ((not libLower.startswith('lib')) and (not lib.ext)) else ''
+    
+    Framework     = '%(FrameworksDir)s/%(libPrefix)s%(lib)s.framework' % locals()
+    FrameworkDbg  = '%(FrameworksDir)s/%(libPrefix)s%(lib)s_dbg.framework' % locals()
 
 
     # Build the autotools part
@@ -246,9 +250,12 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
         if not clean:
             # Make fat library
             OutputDir     = '%(InstallDir)s/lib/' % locals()
-            OutputLibrary = '%(OutputDir)s/lib%(lib)s.a' % locals()
+            
+            libPrefix = 'lib' if not lib.ext else ''
+            
+            OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s.a' % locals()
             if debug:
-                OutputLibrary = '%(OutputDir)s/lib%(lib)s_dbg.a' % locals()
+                OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s_dbg.a' % locals()
             if not os.path.exists(OutputDir):
                 os.makedirs(OutputDir)
             res = ARExecute('lipo ' + ARListAsBashArg(BuiltLibs) + ' -create -output ' + OutputLibrary)
@@ -257,7 +264,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             if debug:
                 FinalFramework = FrameworkDbg
             suffix = '_dbg' if debug else ''
-            FrameworkLib     = '%(FinalFramework)s/lib%(lib)s%(suffix)s' % locals()
+            FrameworkLib     = '%(FinalFramework)s/%(libPrefix)s%(lib)s%(suffix)s' % locals()
             FrameworkHeaders = '%(FinalFramework)s/Headers/' % locals()
             ARDeleteIfExists(FinalFramework)
             os.makedirs(FinalFramework)

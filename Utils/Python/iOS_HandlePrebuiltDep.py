@@ -53,8 +53,8 @@ def iOS_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=None,
                 lib = pb
                 InstallDir    = ARPathFromHere('Targets/%(target)s/Install/' % locals())
                 FrameworksDir = '%(InstallDir)s/Frameworks/' % locals()
-                Framework     = '%(FrameworksDir)s/lib%(lib)s.framework' % locals()
-                FrameworkDbg  = '%(FrameworksDir)s/lib%(lib)s_dbg.framework' % locals()
+                Framework     = '%(FrameworksDir)s/%(lib)s.framework' % locals()
+                FrameworkDbg  = '%(FrameworksDir)s/%(lib)s_dbg.framework' % locals()
                 OutputDir     = '%(InstallDir)s/lib/' % locals()
     
                 if not os.path.exists(OutputDir):
@@ -64,12 +64,11 @@ def iOS_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=None,
             	if debug:
                     FinalFramework = FrameworkDbg
                 suffix = '_dbg' if debug else ''
-                prefix = 'lib' if not lib.name.startswith('lib') else ''
-                FrameworkLib     = '%(FinalFramework)s/%(prefix)s%(lib)s%(suffix)s' % locals()
+                FrameworkLib     = '%(FinalFramework)s/%(lib)s%(suffix)s' % locals()
                 FrameworkHeaders = '%(FinalFramework)s/Headers/' % locals()
                 ARDeleteIfExists(FinalFramework)
                 os.makedirs(FinalFramework)
-                shutil.copytree('%(InstallDir)s/include/%(prefix)s%(lib)s' % locals(), FrameworkHeaders)
+                shutil.copytree('%(InstallDir)s/include/%(lib)s' % locals(), FrameworkHeaders)
         elif Type == 'framework':
             lib = pb
             InstallDir    = ARPathFromHere('Targets/%(target)s/Install/' % locals())

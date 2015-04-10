@@ -42,8 +42,12 @@ def Darwin_RunXcodeBuild(target, lib, xcprojPath, archs, debug=False, clean=Fals
         return EndDumpArgs(res=False, **args)
 
     FrameworksDir = ARPathFromHere('Targets/%(target)s/Install/Frameworks' % locals())
-    Framework     = '%(FrameworksDir)s/lib%(lib)s.framework' % locals()
-    FrameworkDbg  = '%(FrameworksDir)s/lib%(lib)s_dbg.framework' % locals()
+
+    libLower = lib.name.lower()
+    libPrefix = 'lib' if ((not libLower.startswith('lib')) and (not lib.ext)) else ''
+
+    Framework     = '%(FrameworksDir)s/%(libPrefix)s%(lib)s.framework' % locals()
+    FrameworkDbg  = '%(FrameworksDir)s/%(libPrefix)s%(lib)s_dbg.framework' % locals()
 
     BuiltLibs = []
     xcprojDir = os.path.realpath('%(xcprojPath)s/..' % locals())
@@ -74,8 +78,8 @@ def Darwin_RunXcodeBuild(target, lib, xcprojPath, archs, debug=False, clean=Fals
                 ARLog('Unable to build %(CONFIGURATION)s project' % locals())
                 return EndDumpArgs(res=False, **args)
 
-            BuildFramework = '%(xcprojDir)s/Products/%(arch)s/lib%(lib)s.framework' % locals()
-            BuildFrameworkDbg = '%(xcprojDir)s/Products/%(arch)s/lib%(lib)s_dbg.framework' % locals()
+            BuildFramework = '%(xcprojDir)s/Products/%(arch)s/%(libPrefix)s%(lib)s.framework' % locals()
+            BuildFrameworkDbg = '%(xcprojDir)s/Products/%(arch)s/%(libPrefix)s%(lib)s_dbg.framework' % locals()
 
             if debug:
                 if not os.path.exists(FrameworkDbg):
@@ -91,9 +95,9 @@ def Darwin_RunXcodeBuild(target, lib, xcprojPath, archs, debug=False, clean=Fals
         ARDeleteIfExists(Framework)
         ARDeleteIfExists(FrameworkDbg)
     else:
-        FrameworkLib = '%(Framework)s/lib%(lib)s' % locals()
+        FrameworkLib = '%(Framework)s/%(libPrefix)s%(lib)s' % locals()
         if debug:
-            FrameworkLib = '%(FrameworkDbg)s/lib%(lib)s_dbg' % locals()
+            FrameworkLib = '%(FrameworkDbg)s/%(libPrefix)s%(lib)s_dbg' % locals()
 
         if not ARExecute('lipo ' + ARListAsBashArg(BuiltLibs) + ' -create -output ' + FrameworkLib):
             ARLog('Error while creating universal library')

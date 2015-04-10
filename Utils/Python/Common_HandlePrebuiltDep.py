@@ -65,12 +65,11 @@ def Common_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=No
             if not forcedOutputDir:
                 rootOutputDir = ARPathFromHere('Targets/%(target)s/Install/' % locals())
                 OutputDirs = []
-                prefix = 'lib' if not Name.startswith('lib') else ''
                 if outputSuffixes:
                     for d in outputSuffixes:
-                        OutputDirs.append('%(rootOutputDir)s/%(d)s/include/%(prefix)s%(Name)s/' % locals())
+                        OutputDirs.append('%(rootOutputDir)s/%(d)s/include/%(Name)s/' % locals())
                 else:
-                    OutputDirs.append('%(rootOutputDir)s/include/%(prefix)s%(Name)s/' % locals())
+                    OutputDirs.append('%(rootOutputDir)s/include/%(Name)s/' % locals())
             else:
                 OutputDirs = [forcedOutputDir]
             for OutputDir in OutputDirs:

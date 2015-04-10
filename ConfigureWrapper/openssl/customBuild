@@ -653,7 +653,7 @@ def OpensslMakeMultiArchIOSLib(config):
 
 def OpensslMakeIOSFramework(config):
     print '---------------------------------'
-    framework_path = config.install_path + '/Frameworks/libopenssl.framework'
+    framework_path = config.install_path + '/Frameworks/openssl.framework'
     cmd = 'mkdir ' + framework_path
     ret = os.system(cmd)
     print 'mkdir libopenssl.framework', ret
@@ -671,10 +671,10 @@ def OpensslMakeIOSFramework(config):
     print 'cp Headers', ret
     
     #cmd = 'cp ' + config.install_path + '/lib/libopenssl.a ' + framework_path + '/libopenssl'
-    cmd = 'lipo -create ' + config.install_path + '/lib/libopenssl.a ' + '-o ' + framework_path + '/libopenssl'
-    #cmd = 'ar -r ' + config.install_path + framework_path + '/libopenssl' + '/lib/libopenssl.a '
+    cmd = 'lipo -create ' + config.install_path + '/lib/libopenssl.a ' + '-o ' + framework_path + '/openssl'
+    #cmd = 'ar -r ' + config.install_path + framework_path + '/openssl' + '/lib/libopenssl.a '
     ret = os.system(cmd)
-    #print 'cp libopenssl', ret
+    #print 'cp openssl', ret
     print 'lipo ', ret
     return ret
 
