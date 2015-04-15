@@ -36,6 +36,8 @@
 import os
 from xml.dom.minidom import parseString
 
+from ARFuncs import *
+
 
 #
 # String manipulation function
