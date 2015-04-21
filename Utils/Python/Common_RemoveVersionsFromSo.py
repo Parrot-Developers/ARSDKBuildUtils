@@ -74,7 +74,7 @@ def Common_RemoveVersionsFromSo(rootSo, soext, depLibs):
             for i in range(lenDiff):
                 newString = newString + r'\0'
             # Call rpl
-            if not ARExecute('rpl -e %(name)s "%(newString)s" %(outputName)s' % locals()):
+            if not ARExecute('rpl -e %(name)s "%(newString)s" %(outputName)s >/dev/null 2>&1' % locals()):
                 ARLog('Error while running rpl')
                 return False
     return True

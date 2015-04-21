@@ -34,6 +34,8 @@ import os
 import inspect
 import shutil
 import re
+import filecmp
+import errno
 
 # Print a message
 def ARPrint(msg, noNewLine=False):
@@ -212,15 +214,59 @@ def ARCopyAndReplaceFile(SrcFile, DstFile):
         os.makedirs(os.path.dirname(DstFile))
     shutil.copy2(SrcFile, DstFile)
 
+def ar_copytree(src, dst, symlinks=False, ignore=None):
+    names = os.listdir(src)
+    if ignore is not None:
+        ignored_names = ignore(src, names)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    errors = []
+    for name in names:
+        if name in ignored_names:
+            continue
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, name)
+        try:
+            if symlinks and os.path.islink(srcname):
+                linkto = os.readlink(srcname)
+                os.symlink(linkto, dstname)
+            elif os.path.isdir(srcname):
+                ar_copytree(srcname, dstname, symlinks, ignore)
+            else:
+                shutil.copy2(srcname, dstname)
+            # XXX What about devices, sockets etc.?
+        except (IOError, os.error) as why:
+            errors.append((srcname, dstname, str(why)))
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except shutil.Error as err:
+            errors.extend(err.args[0])
+    try:
+        shutil.copystat(src, dst)
+    except shutil.WindowsError:
+        # can't copy file access times on Windows
+        pass
+    except OSError as why:
+        errors.extend((src, dst, str(why)))
+    if errors:
+        raise shutil.Error(errors)
+
 # Recursive copy and replace of a directory.
 # Can optionnaly delete the previous content of the destination directory
 # instead of merging
-def ARCopyAndReplace(SrcRootDir, DstRootDir, deletePrevious=False):
+def ARCopyAndReplace(SrcRootDir, DstRootDir, deletePrevious=False, ignoreRegexpsForDeletion=[]):
     if not os.path.exists(SrcRootDir):
         raise Exception('%(SrcRootDir)s does not exist' % locals())
     if deletePrevious:
-        ARDeleteIfExists(DstRootDir)
-        shutil.copytree(SrcRootDir, DstRootDir, symlinks=True)
+        if ignoreRegexpsForDeletion:
+            ARDeleteRecursivelyNonMatching(DstRootDir, regex=ignoreRegexpsForDeletion)
+        else:
+            ARDeleteIfExists(DstRootDir)
+        ar_copytree(SrcRootDir, DstRootDir, symlinks=True)
+        
     else:
         if not os.path.exists(DstRootDir):
             os.makedirs(DstRootDir)
@@ -244,6 +290,30 @@ def ARDeleteIfExists(*args):
             else:
                 os.remove(fileOrDir)
 
+# Delete a file if it does not match any given regex
+def ARDeleteFileIfNonMatching(path, regex=[]):
+    if os.path.exists(path):
+        name = os.path.basename(path)
+        for exp in regex:
+            if re.match(exp, name):
+                break
+        else:
+            ARDeleteIfExists(path)
+
+# Delete a directory contents except for files matching any given regex in a list
+# Also deletes empty directories
+def ARDeleteRecursivelyNonMatching(path, regex=[]):
+    if not os.path.isdir(path):
+        ARDeleteFileIfNonMatching(path, regex=regex)
+    else:
+        for tst in os.listdir(path):
+            ARDeleteRecursivelyNonMatching(os.path.join(path, tst), regex=regex)
+        try:
+            os.rmdir(path)
+        except OSError as e:
+            if e.errno != errno.ENOTEMPTY:
+                raise e
+
 # Gets the number of available CPUs
 # If the real number can not be determined, return 1
 def ARGetNumberOfCpus():
@@ -265,3 +335,10 @@ def ARReplaceEnvVars(source):
             ARLog('Environment variable %(Match)s is not set !' % locals())
             return None
     return source
+
+def ARReplaceFileIfDifferent(oldFile, newFile):
+    if not os.path.exists(oldFile) or not filecmp.cmp(oldFile, newFile):
+        ARDeleteIfExists(oldFile)
+        os.rename(newFile, oldFile)
+    else:
+        ARDeleteIfExists(newFile)

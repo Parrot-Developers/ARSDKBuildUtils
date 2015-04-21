@@ -31,7 +31,7 @@
 from ARFuncs import *
 from Unix_BuildLibrary import *
 
-def Unix_BuildBinary(target, bin, clean=False, debug=False, nodeps=False, inhouse=False):
+def Unix_BuildBinary(target, bin, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
     args = dict(locals())
     StartDumpArgs(**args)
 

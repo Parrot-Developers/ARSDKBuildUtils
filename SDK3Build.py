@@ -192,7 +192,7 @@ for target in parser.activeTargets:
     if parser.activeLibs:
         if target.name in BUILD_LIB_FUNCS:
             for lib in parser.activeLibs:
-                if not BUILD_LIB_FUNCS[target.name](target, lib, clean=parser.isClean, debug=parser.isDebug, nodeps=parser.noDeps, inhouse=parser.isInHouse):
+                if not BUILD_LIB_FUNCS[target.name](target, lib, clean=parser.isClean, debug=parser.isDebug, nodeps=parser.noDeps, inhouse=parser.isInHouse, requestedArchs=parser.archs):
                     allOk = False
         else:
             ARLog('Unable to build libraries for target %(target)s' % locals())
@@ -209,7 +209,7 @@ for target in parser.activeTargets:
     if parser.activeBins:
         if target.name in BUILD_BIN_FUNCS:
             for bin in parser.activeBins:
-                if not BUILD_BIN_FUNCS[target.name](target, bin, clean=parser.isClean, debug=parser.isDebug, nodeps=parser.noDeps, inhouse=parser.isInHouse):
+                if not BUILD_BIN_FUNCS[target.name](target, bin, clean=parser.isClean, debug=parser.isDebug, nodeps=parser.noDeps, inhouse=parser.isInHouse, requestedArchs=parser.archs):
                     target.failed = True
                     allOk = False
         else:

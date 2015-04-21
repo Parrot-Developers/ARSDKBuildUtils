@@ -71,4 +71,7 @@
     <validtar name="Android"/>
   </prebuilt>
 
+  <prebuilt name="uthash" type="header_only" path="../uthash/src/">
+  </prebuilt>
+
 </prebuiltLibs>

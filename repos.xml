@@ -91,6 +91,7 @@
   <repo name="libARUpdater" rev="2a34eac19ec1e069917d0a5adeedf9e02e1cd050"/>
   <repo name="libARDataTransfer" rev="715e36bfabe49faa046497a81739f7cc90a2f41b"/>
   <repo name="libARMavlink" rev="98035edabbf46e873955de2448fe5ae6829aeda5"/>
+  <repo name="ARController" path="../libARController" rev="048e7ea155c36c5c1ecebac83c7216b319293f28"/>
   <repo name="Samples" rev="8b1818f5ce7bece096248c93a1c42749c75a6be7" forceBaseUrl="TRUE"/>
 
   <repo name="curl" rev="curl-7_36_0-arsdk" forceBaseUrl="TRUE"/>
@@ -110,5 +111,8 @@
   </webfile>
   <webfile url="https://s3.amazonaws.com/json-c_releases/releases/json-c-0.9.tar.gz" storePath="../json-c"/>
   <webfile url="http://mirrors.ibiblio.org/pub/mirrors/maven2/org/apache/sanselan/sanselan/0.97-incubator/sanselan-0.97-incubator.jar" storePath="../sanselan"/>
+  
+  <extrepo url="https://github.com/troydhanson/uthash.git" rev="3022899165f32baaf67efbe79e098f0d5ba62d4f">
+  </extrepo>
 
 </repos>

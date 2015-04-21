@@ -32,7 +32,7 @@ from ARFuncs import *
 from Common_BuildConfigureLibrary import *
 from Common_HandlePrebuiltDep import *
 
-def Unix_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False):
+def Unix_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
     # Unix libraries are only configure libraries, with no extra args
     args = dict(locals())
     StartDumpArgs(**args)

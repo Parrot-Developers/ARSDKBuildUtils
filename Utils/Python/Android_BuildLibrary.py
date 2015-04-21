@@ -35,7 +35,7 @@ from Android_CreateFiles import *
 from Common_HandlePrebuiltDep import *
 import shutil
 
-def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False):
+def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
     args = dict(locals())
 
     StartDumpArgs(**args)
@@ -52,16 +52,30 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
         ARLog('lib%(lib)s does not need to be built for %(target)s' % locals())
         return EndDumpArgs(res=True, **args)
 
-    KnownArchs = ({ 'arch' : 'arm',  'eabi' : 'armeabi',     'host' : 'arm-linux-androideabi' },
+    KnownArchs = [{ 'arch' : 'arm',  'eabi' : 'armeabi',     'host' : 'arm-linux-androideabi' },
                   { 'arch' : 'arm',  'eabi' : 'armeabi-v7a', 'host' : 'arm-linux-androideabi' },
                   { 'arch' : 'mips', 'eabi' : 'mips',        'host' : 'mipsel-linux-android' },
                   { 'arch' : 'x86',  'eabi' : 'x86',         'host' : 'i686-linux-android' },
-                  )
+                  ]
+    KnownEabis =  [ arch['eabi'] for arch in KnownArchs ]
+
+    ValidArchs = []
+
+    if requestedArchs:
+        ValidArchs = [ arch for arch in KnownArchs if arch['eabi'] in requestedArchs ]
+        for ra in requestedArchs:
+            if ra not in KnownEabis:
+                ARLog('Error : requested arch %(ra)s is not available for target Android' % locals())
+                ARLog('  Avaiable archs : %(KnownEabis)s' % locals())
+                return EndDumpArgs(res=False, **args)
+    if not ValidArchs:
+        ValidArchs = KnownArchs
+
 
     # First thing : build deps
     if not nodeps:
         for pb in lib.pbdeps:
-            abis = [arch['eabi'] for arch in KnownArchs]
+            abis = [arch['eabi'] for arch in ValidArchs]
             if not Common_HandlePrebuiltDep(target, pb, outputSuffixes=abis):
                 ARLog('Error while handling prebuilt library %(pb)s' % locals())
                 return EndDumpArgs(res=False, **args)
@@ -93,7 +107,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
     if Common_IsConfigureLibrary(lib):
         hasNative = True
 
-        for archInfos in KnownArchs:
+        for archInfos in ValidArchs:
             # Read archInfos
             arch = archInfos['arch']
             eabi = archInfos['eabi']
@@ -191,9 +205,9 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             if not os.path.exists(ActualJavaBuildDir):
                 os.makedirs(ActualJavaBuildDir)
             ARCopyAndReplace(JniJavaDir, BuildSrcDir, deletePrevious=True)
-            ARCopyAndReplace(JniCDir, BuildJniDir, deletePrevious=True)
+            ARCopyAndReplace(JniCDir, BuildJniDir, deletePrevious=True, ignoreRegexpsForDeletion=[r'.*mk'])
             # Create Android.mk / Application.mk / AndroidManifest.xml
-            Android_CreateApplicationMk(ActualJavaBuildDir)
+            Android_CreateApplicationMk(ActualJavaBuildDir, [arch['eabi'] for arch in ValidArchs])
             Android_CreateAndroidManifest(ActualJavaBuildDir, lib)
             Android_CreateAndroidMk(target, ActualJavaBuildDir, ARPathFromHere('Targets/%(target)s/Install' % locals()), lib, debug, hasNative, inhouse=inhouse)
             # Call ndk-build
@@ -219,7 +233,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             if not os.path.exists(ActualOutputJarDir):
                 os.makedirs(ActualOutputJarDir)
             # Move good files in a ./lib directory (instead of ./libs)
-            for archInfos in KnownArchs:
+            for archInfos in ValidArchs:
                 eabi = archInfos['eabi']
                 JarLibDir = '%(ActualJavaBuildDir)s/lib/%(eabi)s' % locals()
                 if not os.path.exists(JarLibDir):
@@ -233,13 +247,13 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
                 ARLog('Error while creating jar file')
                 return EndDumpArgs(res=False, **args)
             # Copy output so libraries into target dir
-            for archInfos in KnownArchs:
+            for archInfos in ValidArchs:
                 eabi = archInfos['eabi']
                 shutil.copy2('%(ActualJavaBuildDir)s/libs/%(eabi)s/%(ActualAndroidSoLib)s' % locals(),
                              ARPathFromHere('Targets/%(target)s/Install/%(eabi)s/lib/%(ActualAndroidSoLib)s' % locals()))
         else:
             ARDeleteIfExists(OutputJarDbg, OutputJar, JavaBuildDir, JavaBuildDirDbg)
-            for archInfos in KnownArchs:
+            for archInfos in ValidArchs:
                 eabi = archInfos['eabi']
                 LibRelease = ARPathFromHere('Targets/%(target)s/Install/%(eabi)s/lib/%(AndroidSoLib)s' % locals())
                 LibDebug = ARPathFromHere('Targets/%(target)s/Install/%(eabi)s/lib/%(AndroidSoLibDbg)s' % locals())
@@ -256,7 +270,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
                 ARDeleteIfExists (LibsDir)
             if not os.path.exists(LibsDir):
                 os.makedirs(LibsDir)
-            for archInfos in KnownArchs:
+            for archInfos in ValidArchs:
                 eabi = archInfos['eabi']
                 eabiDir = '%(LibsDir)s/%(eabi)s' % locals()
                 if not os.path.exists(eabiDir):

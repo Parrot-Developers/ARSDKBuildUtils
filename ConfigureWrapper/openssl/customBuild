@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 
+OPENSSL_VERSION='1.0.2a'
+
 MYDIR=os.path.abspath(os.path.dirname(sys.argv[0]))
 if '' == MYDIR:
     MYDIR=os.getcwd()
@@ -204,7 +206,7 @@ def OpensslBuildPath(config, MYDIR):
         return 1
     
     #/Users/David/github/ARSDKBuildUtils/ConfigureWrapper/openssl
-    config.repo_path = os.path.abspath('%(MYDIR)s/../../../openssl/openssl-1.0.2' % locals())
+    config.repo_path = os.path.abspath('%(MYDIR)s/../../../openssl/openssl-' % locals() + OPENSSL_VERSION)
     config.opt_prefix = '--prefix=' + config.install_path
     
     print 'openssl: ' + config.repo_path
@@ -680,6 +682,20 @@ def OpensslMakeIOSFramework(config):
 # Runs openssl ./configure make
 ####################################
 
+def OpensslParseLogFile(path):
+    if not os.path.exists(path):
+        return None
+
+    ret = {}
+    with open(path) as logFile:
+        for line in logFile:
+            m = re.match(r'([A-Z_]*)=(.*)', line)
+            if m:
+                ret[m.group(1)] = m.group(2)
+
+    return ret
+
+
 retCode=0
 configuredCode=0
 installedCode=0
@@ -690,9 +706,16 @@ if retCode == 0:
 
 if retCode == 0:
     if os.path.exists(config.build_path + '/config.log'):
-        print '---------------------------------'
-        print 'config.log already configured: ' + config.build_path + '/config.log'
-        configuredCode = 1
+        logArgs = OpensslParseLogFile(os.path.join(config.build_path, 'config.log'))
+        try:
+            if logArgs['BUILT_VERSION'] == OPENSSL_VERSION:
+                print '---------------------------------'
+                print 'config.log already configured: ' + config.build_path + '/config.log'
+                configuredCode = 1
+        except TypeError:
+            pass
+        except KeyError:
+            pass
     if os.path.exists(config.install_path + '/include/openssl'):
         print '---------------------------------'
         print 'openssl already installed'
@@ -719,13 +742,13 @@ print '---------------------------------'
 ####################################
 
 confdir = os.getcwd()
-configLog = open ('%(confdir)s/config.log' % locals(), 'a')
-#configLog = open ('config.log' % locals(), 'a')
+configLog = open (os.path.join(confdir, 'config.log'), 'w')
 
-configPath = os.path.abspath(filePath.replace('customBuild', 'configure'))
-
-#configLog.write ("  $ "+ filePath + orgArgs)
-configLog.write ("  $ "+ configPath + orgArgs)
+# KEY=value
+# KEY must only contains upper case letters, and underscores --> [A-Z_]
+# NO SPACE AFTER KEY !
+configLog.write ('BUILT_VERSION=%(OPENSSL_VERSION)s' % locals() + '\n')
+configLog.write ('PREVIOUS_ARGS=' + orgArgs.replace('\n', '')   + '\n')
 
 #retCode = 1
 configLog.close ()
