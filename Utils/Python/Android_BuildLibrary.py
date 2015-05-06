@@ -215,7 +215,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             ndk_debug = ''
             if debug:
                 ndk_debug = 'NDK_DEBUG=1'
-            res = ARExecute(os.environ.get('ANDROID_NDK_PATH') + '/ndk-build ' + ndk_debug)
+            res = ARExecute(os.environ.get('ANDROID_NDK_PATH') + '/ndk-build -j ' + ndk_debug)
             buildDir.exit()
             if not res:
                 ARLog('Error while running ndk-build')
