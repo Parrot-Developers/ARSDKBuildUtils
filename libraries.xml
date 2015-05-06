@@ -190,5 +190,19 @@
     <extraConfigureFlag value="--disable-videoenc"/>
     <prebuiltdep name="sanselan-0.97-incubator"/>
   </lib>
+  
+  <lib name="ARController">
+    <dep name="ARSAL"/>
+    <dep name="ARDiscovery"/>
+    <dep name="ARNetworkAL"/>
+    <dep name="ARNetwork"/>
+    <dep name="ARCommands"/>
+    <dep name="ARStream"/>
+    <dep name="json"/>
+    <prebuiltdep name="uthash"/>
+    <configureDepFile name="Python/*.py"/>
+    <configureDepFile name="Xml/*.xml"/>
+    <configureDepFile name="../libARCommands/Xml/*.xml"/>
+</lib>
 
 </libraries>
