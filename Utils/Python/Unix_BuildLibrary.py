@@ -32,7 +32,7 @@ from ARFuncs import *
 from Common_BuildConfigureLibrary import *
 from Common_HandlePrebuiltDep import *
 
-def Unix_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
+def Unix_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None, isMp=False):
     # Unix libraries are only configure libraries, with no extra args
     args = dict(locals())
     StartDumpArgs(**args)
@@ -66,7 +66,7 @@ def Unix_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhou
 
     # Then : build this library
     ExtraConfFlags = [ 'CFLAGS="-fPIC"']
-    res = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, inhouse=inhouse)
+    res = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, inhouse=inhouse, isMp=False)
 
     # If all went well, mark the library as built for current target
     if res:

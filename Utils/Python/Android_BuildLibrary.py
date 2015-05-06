@@ -8,7 +8,7 @@
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the 
+      the documentation and/or other materials provided with the
       distribution.
     * Neither the name of Parrot nor the names
       of its contributors may be used to endorse or promote products
@@ -22,7 +22,7 @@
     COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
     AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
     OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -34,8 +34,15 @@ from Common_RunAntScript import *
 from Android_CreateFiles import *
 from Common_HandlePrebuiltDep import *
 import shutil
+from multiprocessing import Lock, Pool, Manager
 
-def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
+KnownArchs = [{ 'arch' : 'arm',  'eabi' : 'armeabi',     'host' : 'arm-linux-androideabi' },
+              { 'arch' : 'arm',  'eabi' : 'armeabi-v7a', 'host' : 'arm-linux-androideabi' },
+              { 'arch' : 'mips', 'eabi' : 'mips',        'host' : 'mipsel-linux-android' },
+              { 'arch' : 'x86',  'eabi' : 'x86',         'host' : 'i686-linux-android' },
+]
+
+def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None, isMp=False):
     args = dict(locals())
 
     StartDumpArgs(**args)
@@ -51,12 +58,6 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
     if not lib.isAvailableForTarget(target):
         ARLog('lib%(lib)s does not need to be built for %(target)s' % locals())
         return EndDumpArgs(res=True, **args)
-
-    KnownArchs = [{ 'arch' : 'arm',  'eabi' : 'armeabi',     'host' : 'arm-linux-androideabi' },
-                  { 'arch' : 'arm',  'eabi' : 'armeabi-v7a', 'host' : 'arm-linux-androideabi' },
-                  { 'arch' : 'mips', 'eabi' : 'mips',        'host' : 'mipsel-linux-android' },
-                  { 'arch' : 'x86',  'eabi' : 'x86',         'host' : 'i686-linux-android' },
-                  ]
 
     KnownEabis =  [ arch['eabi'] for arch in KnownArchs ]
 
@@ -108,6 +109,16 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
     if Common_IsConfigureLibrary(lib):
         hasNative = True
 
+        forcedMalloc = ARSetEnvIfEmpty('ac_cv_func_malloc_0_nonnull', 'yes')
+        forcedRealloc = ARSetEnvIfEmpty('ac_cv_func_realloc_0_nonnull', 'yes')
+
+        pool = Pool(processes=len(ValidArchs))
+        poolResults = []
+        retStatus = True
+        bLock = Manager().Lock()
+        cLock = Manager().Lock()
+        mLock = None
+
         for archInfos in ValidArchs:
             # Read archInfos
             arch = archInfos['arch']
@@ -119,7 +130,8 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
                 ARLog('%(compilerTestName)s is not in your path' % locals())
                 ARLog('You need to install it as a standalone toolchain to use this build script')
                 ARLog('(See NDK Doc)')
-                return EndDumpArgs(res=False, **args)
+                retStatus=False
+                break
 
             # Add extra configure flags
             ExtraConfFlags = ['--host=%(host)s' % locals(),
@@ -146,16 +158,43 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
 
             # Call configure/make/make install
             stripVersionNumber = lib.ext and not clean
-            forcedMalloc = ARSetEnvIfEmpty('ac_cv_func_malloc_0_nonnull', 'yes')
-            forcedRealloc = ARSetEnvIfEmpty('ac_cv_func_realloc_0_nonnull', 'yes')
-            retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=eabi, installSubDir=eabi, stripVersionNumber=stripVersionNumber, inhouse=inhouse)
-            if forcedMalloc:
-                ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
-            if forcedRealloc:
-                ARUnsetEnv('ac_cv_func_realloc_0_nonnull')            
-            if not retStatus:
-                return EndDumpArgs(res=False, **args)
 
+            if isMp:
+                print "Apply async"
+                poolRes = pool.apply_async(Common_BuildConfigureLibrary,
+                                           args=(target, lib,),
+                                           kwds={'extraArgs':ExtraConfFlags,
+                                                 'clean':clean,
+                                                 'debug':debug,
+                                                 'confdirSuffix':eabi,
+                                                 'installSubDir':eabi,
+                                                 'stripVersionNumber':stripVersionNumber,
+                                                 'inhouse':inhouse,
+                                                 'bootstrapLock':bLock,
+                                                 'configureLock':cLock,
+                                                 'makeLock':mLock,
+                                                 'isMp':isMp,},
+                                           callback=None)
+                poolResults.append(poolRes)
+            else:
+                retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=eabi, installSubDir=eabi, stripVersionNumber=stripVersionNumber, inhouse=inhouse, bootstrapLock=bLock, configureLock=cLock, makeLock=mLock, isMp=False)
+
+        if isMp:
+            for p in poolResults:
+                (p_res, p_updatedlib) = p.get()
+                if not p_res:
+                    retStatus = False
+                else:
+                    for p_lib in p_updatedlib.soLibs:
+                        if not p_lib in lib.soLibs:
+                            lib.soLibs.append(p_lib)
+
+        if forcedMalloc:
+            ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
+        if forcedRealloc:
+            ARUnsetEnv('ac_cv_func_realloc_0_nonnull')
+        if not retStatus:
+            return EndDumpArgs(res=False, **args)
 
     # 2 Java part (Pure Java or Java + JNI), mandatory
     # Declare path
@@ -174,7 +213,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
     ActualOutputJarDir = OutputJarDir if not debug else OutputJarDirDbg
     ActualOutputJar    = OutputJar    if not debug else OutputJarDbg
     ActualAndroidSoLib = AndroidSoLib if not debug else AndroidSoLibDbg
-    
+
     # Check for full java Android projects
     if os.path.exists(AndroidPath):
         BuildXmlFile = '%(AndroidPath)s/build.xml' % locals()
@@ -231,7 +270,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             classpath = ' -cp ' + os.environ.get('ANDROID_SDK_PATH') + '/platforms/android-%(ANDROID_SDK_VERSION)s/android.jar' % locals()
             if lib.deps or lib.pbdeps:
                 classpath += ':"%(ActualOutputJarDir)s/*"' % locals()
-                
+
             JavaFilesDir = '%(BuildSrcDir)s/com/parrot/arsdk/%(libLower)s/' % locals()
             JavaFiles = ARExecuteGetStdout(['find', JavaFilesDir, '-name', '*.java']).replace('\n', ' ')
             if not ARExecute('javac -source 1.6 -target 1.6 -sourcepath %(BuildSrcDir)s %(JavaFiles)s %(classpath)s' % locals()):

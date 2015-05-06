@@ -65,7 +65,7 @@ def iOS_GetXcodeProject(lib):
 def iOS_HasXcodeProject(lib):
     return iOS_GetXcodeProject(lib) is not None
 
-def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
+def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None, isMp=False):
     args = dict(locals())
 
     StartDumpArgs(**args)
@@ -237,7 +237,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             # This leads to link issues for programs.
             forcedMalloc = ARSetEnvIfEmpty('ac_cv_func_malloc_0_nonnull', 'yes')
             forcedRealloc = ARSetEnvIfEmpty('ac_cv_func_realloc_0_nonnull', 'yes')
-            retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=arch, noSharedObjects=True, inhouse=inhouse)
+            retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=arch, noSharedObjects=True, inhouse=inhouse, isMp=False)
             # Remove any added export
             if forcedMalloc:
                 ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
