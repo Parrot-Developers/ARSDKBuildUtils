@@ -84,7 +84,7 @@
   <repo name="libARDiscovery" rev="71fd0dd633531938744d6b262904d88d92981b38"/>
   <repo name="libARNetwork" rev="27ff2ce5ef85d13ed1b1fc5b9a3cdd3734de024a"/>
   <repo name="libARNetworkAL" rev="26dd083c97fdba7113a0fbbdf7a878e4ac79307f"/>
-  <repo name="libARSAL" rev="e9d303a09d6b0af828bbfd2241c1543c6f97c86a"/>
+  <repo name="libARSAL" rev="49f9f885493fcc6fff9c5fd3d59af028da6d4a45"/>
   <repo name="libARStream" rev="7dc2f178ca28c4a545a39570bc46b20fbcd845ec"/>
   <repo name="libARMedia" rev="b097767cd879b7482bcd998b16b698dbbaf217f2"/>
   <repo name="libARUtils" rev="59982c66b828f4b142b33f980da60cd40303ce38"/>
