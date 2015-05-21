@@ -32,7 +32,7 @@ import os
 import argparse
 from ARFuncs import *
 
-defaultBaseRepoUrl = 'https://github.com/ARDroneSDK3/'
+defaultBaseRepoUrl = 'https://github.com/Parrot-Developers/'
 
 class CommandLineParser:
     "Command line options parser for ARSDK 3 build script"
