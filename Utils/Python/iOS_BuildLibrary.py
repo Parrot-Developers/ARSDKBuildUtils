@@ -111,7 +111,9 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
     KnownArchs = [ { 'arch':'armv7', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'armv7s', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'arm64', 'platform':'iPhoneOS', 'minos':'iphoneos' },
-                   { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+    #               { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' },
+                   { 'arch':'x86_64', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+
     KnownEabis = [ arch['arch'] for arch in KnownArchs ]
     ValidArchs = []
 
