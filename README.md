@@ -26,6 +26,8 @@ The SDK provides the source code you need to do everything provided by the freef
 
 <br>
 
+**The easiest way to control a drone is to create a device controller thanks to the [libARController](https://github.com/Parrot-Developers/libARController)**. This lib is quite new, we are still working hard on it. It is still in **beta state**, but you can use it. Two samples which use this new API are available : [JSPilotingNewAPI](https://github.com/Parrot-Developers/Samples/tree/master/Unix/JSPilotingNewAPI) for Unix and [RSPilotingNewAPI](https://github.com/Parrot-Developers/Samples/tree/master/iOS/RSPilotingNewAPI) for iOS. More will come. This library is quite slow to compile for the moment, we are working on it :)
+
 It's BSD license allows to use, change, distribute with no restriction.
 Contributions and new feature discussions are highly appreciated.
 
