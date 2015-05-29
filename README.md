@@ -31,11 +31,16 @@ The SDK provides the source code you need to do everything provided by the freef
 It's BSD license allows to use, change, distribute with no restriction.
 Contributions and new feature discussions are highly appreciated.
 
+
 **The latest release version is tagged ARSDK3_version_3_1_0**
 
 Usage
 -------------
 Please read [the install documentation](https://github.com/ARDroneSDK3/Docs/blob/master/Installation/INSTALL)
+
+Questions
+----
+**If you have any questions, please open a new DroneSDK topic on the [Parrot Developer forum](http://forum.developer.parrot.com/).**
 
 Samples
 ---------
