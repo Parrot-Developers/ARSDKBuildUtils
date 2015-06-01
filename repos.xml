@@ -94,7 +94,7 @@
   <repo name="libARController" rev="690709525db1cb77e4824e0809b7b437756c57d5"/>
   <repo name="Samples" rev="436634d9687ad3c0e03062f0f9fb21863db491f1" forceBaseUrl="TRUE"/>
 
-  <repo name="curl" rev="curl-7_36_0-arsdk-branch" forceBaseUrl="TRUE"/>
+  <repo name="curl" rev="curl-7_36_0-arsdk-1" forceBaseUrl="TRUE"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
