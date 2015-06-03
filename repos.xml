@@ -80,7 +80,7 @@
   <repo name="Docs" rev="17c39b4b09031158e862ac100d6283cf9859e1b2" forceBaseUrl="TRUE"/>
 
   <!-- SDK Repositories -->
-  <repo name="libARCommands" rev="233ae5eeaba2fd57a3e2c8ba653160c6a0086a22"/>
+  <repo name="libARCommands" rev="85a5fd8cb33b4ff5b6d2f05f15dbb1dc1b7fcf8f"/>
   <repo name="libARDiscovery" rev="83cfb84833076ef53a06f29122a05c2afe05704d"/>
   <repo name="libARNetwork" rev="14dff8b6dc16063a46afab46afbb3f61db1b507c"/>
   <repo name="libARNetworkAL" rev="fbf24e3d911f99c9708cbffa8dd1781b5fdc164f"/>
