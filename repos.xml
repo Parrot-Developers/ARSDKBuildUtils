@@ -92,7 +92,7 @@
   <repo name="libARDataTransfer" rev="f3ec7476c2cbd95cd76c3d9817668147e2bfe540"/>
   <repo name="libARMavlink" rev="5589a0b56a11839b3e439084ef06f8d9433a717d"/>
   <repo name="libARController" rev="690709525db1cb77e4824e0809b7b437756c57d5"/>
-  <repo name="Samples" rev="436634d9687ad3c0e03062f0f9fb21863db491f1" forceBaseUrl="TRUE"/>
+  <repo name="Samples" rev="1708201ddbc65019be54021232fe41c533dea3af" forceBaseUrl="TRUE"/>
 
   <repo name="curl" rev="curl-7_36_0-arsdk-1" forceBaseUrl="TRUE"/>
 
