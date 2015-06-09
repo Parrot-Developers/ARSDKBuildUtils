@@ -134,12 +134,15 @@ class ARReposList:
             ARPrint('Repo %(repo)s is already in list' % locals())
             EXIT(1)
         self.list.append(repo)
-    def getRepo(self, name):
+    def getRepo(self, name, silent=False):
         for rep in self.list:
             if rep.name == name:
                 return rep
-        ARPrint('Repo %(name)s does not exist in list' % locals())
-        EXIT(1)
+        if not silent:
+            ARPrint('Repo %(name)s does not exist in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def containsWebfile(self, webfile):
         res = False
         for trep in self.webfilesList:
@@ -152,12 +155,15 @@ class ARReposList:
             ARPrint('Webfile %(webfile)s is already in list' % locals())
             EXIT(1)
         self.webfilesList.append(webfile)
-    def getWebfile(self, name):
+    def getWebfile(self, name, silent=False):
         for rep in self.webfilesList:
             if rep.name == name:
                 return rep
-        ARPrint('Webfile %(name)s does not exist in list' % locals())
-        EXIT(1)
+        if not silent:
+            ARPrint('Webfile %(name)s does not exist in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def dump(self):
         ARPrint('REPOS : {')
         for repo in self.list:
@@ -251,11 +257,15 @@ class ARTargetsList:
             ARPrint('Target %(target)s is already in list' % locals())
             raise Exception
         self.list.append(target)
-    def getTarget(self, name):
+    def getTarget(self, name, silent=False):
         for tar in self.list:
             if tar.name == name:
                 return tar
-        raise Exception
+        if not silent:
+            ARPrint('Target %(name)s does not exist in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def dump(self):
         ARPrint('TARGETS : {')
         for target in self.list:
@@ -339,12 +349,15 @@ class ARPrebuiltList:
             ARPrint('Prebuilt library %(pb)s is already in list' % locals())
             EXIT(1)
         self.list.append(pb)
-    def getPrebuilt(self, name):
+    def getPrebuilt(self, name, silent=False):
         for pb in self.list:
             if pb.name == name:
                 return pb
-        ARPrint('Prebuilt library %(pb)s does not exists in list' % locals())
-        EXIT(1)
+        if not silent:
+            ARPrint('Prebuilt library %(pb)s does not exists in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def dump(self):
         ARPrint('PREBUILT LIBS : {')
         for pb in self.list:
@@ -482,12 +495,15 @@ class ARLibrariesList:
             ARPrint('Library lib%(lib)s is already in list' % locals())
             EXIT(1)
         self.list.append(lib)
-    def getLib(self, name):
+    def getLib(self, name, silent=False):
         for lib in self.list:
             if lib.name == name:
                 return lib
-        ARPrint('Library lib%(name)s does not exist in list' % locals())
-        EXIT(1)
+        if not silent:
+            ARPrint('Library lib%(name)s does not exist in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def dump(self):
         ARPrint('LIBS : {')
         for lib in self.list:
@@ -608,12 +624,15 @@ class ARBinariesList:
             ARPrint('Binary %(bin)s is already in list' % locals())
             EXIT(1)
         self.list.append(bin)
-    def getBin(self, name):
+    def getBin(self, name, silent=False):
         for bin in self.list:
             if bin.name == name:
                 return bin
-        ARPrint('Binary %(name)s does not exist in list' % locals())
-        EXIT(1)
+        if not silent:
+            ARPrint('Binary %(name)s does not exist in list' % locals())
+            EXIT(1)
+        else:
+            raise Exception
     def dump(self):
         ARPrint('BIN : {')
         for bin in self.list:
@@ -716,7 +735,7 @@ def parseTargetsXmlFile(paths):
         for xtarget in xtargets:
             needToAdd = True
             try:
-                target = targets.getTarget(xtarget.attributes['name'].nodeValue)
+                target = targets.getTarget(xtarget.attributes['name'].nodeValue, silent=True)
                 needToAdd = False
             except:
                 target = ARTarget(xtarget.attributes['name'].nodeValue, xtarget.attributes['soext'].nodeValue)
@@ -747,7 +766,7 @@ def parsePrebuiltXmlFile(paths, targets):
         for xpb in xprebuilts:
             needToAdd = True
             try:
-                pb = prebuilts.getPrebuilt(xpb.attributes['name'].nodeValue)
+                pb = prebuilts.getPrebuilt(xpb.attributes['name'].nodeValue, silent=True)
                 needToAdd = False
             except:
                 pb = ARPrebuilt(xpb.attributes['name'].nodeValue, xpb.attributes['type'].nodeValue, xpb.attributes['path'].nodeValue)
@@ -776,7 +795,7 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
         for xlib in xlibraries:
             needToAdd = True
             try:
-                lib = libraries.getLib(xlib.attributes['name'].nodeValue)
+                lib = libraries.getLib(xlib.attributes['name'].nodeValue, silent=True)
                 needToAdd = False
             except:
                 lib = ARLibrary(xlib.attributes['name'].nodeValue, isExternal=True, extPath=xlib.attributes['path'].nodeValue)
@@ -788,7 +807,6 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
                     ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
                 lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
             if xlib.hasAttribute('customBuild') and xlib.attributes['customBuild'].nodeValue is not None:
-                print 'customBuild: ' + xlib.attributes['customBuild'].nodeValue
                 lib.customBuild = xlib.attributes['customBuild'].nodeValue
             xtargets = xlib.getElementsByTagName('validtar')
             for xtarget in xtargets:
@@ -817,7 +835,7 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
         for xlib in xlibraries:
             needToAdd = True
             try:
-                lib = libraries.getLib(xlib.attributes['name'].nodeValue)
+                lib = libraries.getLib(xlib.attributes['name'].nodeValue, silent=True)
                 needToAdd = False
             except:
                 lib = ARLibrary(xlib.attributes['name'].nodeValue)
@@ -866,7 +884,7 @@ def parseBinariesXmlFile(paths, targets, libraries):
         for xbin in xbinaries:
             needToAdd = True
             try:
-                bin = binaries.getBin(xbin.attributes['name'].nodeValue)
+                bin = binaries.getBin(xbin.attributes['name'].nodeValue, silent=True)
                 needToAdd = False
             except:
                 bin = ARBinary(xbin.attributes['name'].nodeValue, xbin.attributes['pathToBuildDir'].nodeValue)
