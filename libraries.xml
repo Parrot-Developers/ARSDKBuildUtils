@@ -77,7 +77,7 @@
 
 <libraries>
   
-  <extlib name="openssl" path="../openssl/openssl-1.0.2a" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
+  <extlib name="openssl" path="../openssl/openssl-1.0.2c" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
   </extlib>
 
   <lib name="ARSAL">
