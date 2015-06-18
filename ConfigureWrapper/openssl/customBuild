@@ -581,19 +581,23 @@ def OpensslMakeInstallPlateformAndroid(config):
     print 'rm libcrypto so', ret
     ret = os.system('rm ' + lib_path + '/libssl.so')
     print 'rm libssl so', ret
-    ret = os.system('rm ' + lib_path + '/libcrypto.a')
-    print 'rm libcrypto a', ret
-    ret = os.system('rm ' + lib_path + '/libssl.a')
-    print 'rm libssl a', ret
-    ret = os.system('mv ' + lib_path + '/libcrypto.so.1.0.0 ' + lib_path + '/libcrypto.so')
-    print 'mv libcrypto so.1.0.0', ret
-    ret = os.system('mv ' + lib_path + '/libssl.so.1.0.0 ' + lib_path + '/libssl.so')
-    print 'mv libssl so.1.0.0', ret
+    #ret = os.system('rm ' + lib_path + '/libcrypto.a')
+    #print 'rm libcrypto a', ret
+    #ret = os.system('rm ' + lib_path + '/libssl.a')
+    #print 'rm libssl a', ret
+    #ret = os.system('mv ' + lib_path + '/libcrypto.so.1.0.0 ' + lib_path + '/libcrypto.so')
+    #print 'mv libcrypto so.1.0.0', ret
+    ret = os.system('rm ' + lib_path + '/libcrypto.so.1.0.0')
+    print 'rm libcrypto so.1.0.0', ret
+    #ret = os.system('mv ' + lib_path + '/libssl.so.1.0.0 ' + lib_path + '/libssl.so')
+    #print 'mv libssl so.1.0.0', ret
+    ret = os.system('rm ' + lib_path + '/libssl.so.1.0.0')
+    print 'rm libssl so.1.0.0', ret
     #
     #rpl
-    RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libcrypto.so')
-    RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libssl.so')
-    RplCommand('libssl.so.1.0.0', 'libssl.so', lib_path + '/libssl.so')
+    #RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libcrypto.so')
+    #RplCommand('libcrypto.so.1.0.0', 'libcrypto.so', lib_path + '/libssl.so')
+    #RplCommand('libssl.so.1.0.0', 'libssl.so', lib_path + '/libssl.so')
     #
     #lib
     ret = os.system('mkdir ' + config.install_java)
@@ -613,10 +617,10 @@ def OpensslMakeInstallPlateformAndroid(config):
     #print 'mkdir _Java/libs/arch', ret
     #
     #cp
-    ret = os.system('cp ' + lib_path + '/libcrypto.so ' + java_lib_path + '/libcrypto.so')
-    print 'cp libcrypto lib', ret
-    ret = os.system('cp ' + lib_path + '/libssl.so ' + java_lib_path + '/libssl.so')
-    print 'cp libssl lib', ret
+    #ret = os.system('cp ' + lib_path + '/libcrypto.so ' + java_lib_path + '/libcrypto.so')
+    #print 'cp libcrypto lib', ret
+    #ret = os.system('cp ' + lib_path + '/libssl.so ' + java_lib_path + '/libssl.so')
+    #print 'cp libssl lib', ret
     #ret = os.system('cp ' + lib_path + '/libcrypto.so ' + java_libs_path + '/libcrypto.so')
     #print 'cp libcrypto libs', ret
     #ret = os.system('cp ' + lib_path + '/libssl.so ' + java_libs_path + '/libssl.so')
