@@ -102,7 +102,7 @@
   </extrepo>
 
   <!-- External tar -->
-  <webfile url="https://www.openssl.org/source/openssl-1.0.2a.tar.gz" storePath="../openssl"/>
+  <webfile url="https://www.openssl.org/source/openssl-1.0.2c.tar.gz" storePath="../openssl"/>
 
   <!-- Prebuilt -->
   <webfile url="http://downloads.sourceforge.net/project/jmdns/jmdns/JmDNS%203.4.1/jmdns-3.4.1.tgz" storePath="../jmdns">
