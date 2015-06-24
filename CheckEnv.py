@@ -147,7 +147,16 @@ ARVBPrint('')
 
 if sys.version_info < (2, 7):
     ARVBPrint(logcolors.FAIL + ' Bad python version.' + logcolors.DEF + ' The SDK requires python 2.7 or higher (python 3 versions are supported)')
-    sys.exit(0)
+    ARVBPrint('')
+    sys.exit(1)
+
+
+
+DirLastPath=os.path.basename(MYDIR)
+if DirLastPath != 'ARSDKBuildUtils':
+    ARVBPrint(logcolors.FAIL + ' Bad folder name.' + logcolors.DEF + ' The SDK needs to be in a folder named "ARSDKBuildUtils", but the current folder is named "'+DirLastPath+'".')
+    ARVBPrint('')
+    sys.exit(1)
 
 
 
@@ -247,4 +256,6 @@ if statusTarget:
             status = 0 if not t['unknown'] and t['status'] else 1
             sys.exit(status)
     sys.exit(1)
+
+sys.exit(0)
 
