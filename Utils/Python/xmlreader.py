@@ -379,6 +379,7 @@ class ARLibrary:
         self.confdeps = []
         self.targets = []
         self.soLibs = []
+        self.hasBaseSoLibs = False
         self.customBuild = customBuild
         if extPath:
             self.relativePath = extPath
@@ -471,7 +472,8 @@ class ARLibrary:
     def __str__(self):
         return self.name
     def clearCache(self):
-        del self.soLibs[:]
+        if not self.hasBaseSoLibs:
+            del self.soLibs[:]
 
 #
 # Libraries list storage
@@ -806,8 +808,17 @@ def parseLibraryXmlFile(paths, targets, prebuilts):
                 for xtar in xtars:
                     ltargets.append(targets.getTarget(xtar.attributes['name'].nodeValue))
                 lib.addDep(libraries.getLib(xdep.attributes['name'].nodeValue).ARCopy(ltargets))
+            hasCustomBuild = False
             if xlib.hasAttribute('customBuild') and xlib.attributes['customBuild'].nodeValue is not None:
                 lib.customBuild = xlib.attributes['customBuild'].nodeValue
+                hasCustomBuild = True
+            xsofiles = xlib.getElementsByTagName('sofile')
+            if xsofiles and not hasCustomBuild:
+                ARPrint('You can not use sofile in a library without a customBuild script !')
+                raise OSError
+            for xsofile in xsofiles:
+                lib.soLibs.append(xsofile.attributes['name'].nodeValue)
+                lib.hasBaseSoLibs = True
             xtargets = xlib.getElementsByTagName('validtar')
             for xtarget in xtargets:
                 lib.addTarget(targets.getTarget(xtarget.attributes['name'].nodeValue))
