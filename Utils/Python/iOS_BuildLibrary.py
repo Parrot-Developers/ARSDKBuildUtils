@@ -87,7 +87,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                 ARLog('Dependancy lib%(dep)s already built for %(target)s' % locals())
             elif not dep.isAvailableForTarget(target):
                 ARLog('Dependancy lib%(dep)s does not need to be built for %(target)s' % locals())
-            elif iOS_BuildLibrary(target, dep, clean, debug):
+            elif iOS_BuildLibrary(target, dep, clean, debug, nodeps, inhouse, requestedArchs):
                 ARLog('Dependancy lib%(dep)s built' % locals())
             else:
                 ARLog('Error while building dependancy lib%(dep)s' %locals())
@@ -141,7 +141,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
     # Build the autotools part
     BuiltLibs = []
     if Common_IsConfigureLibrary(lib):
-        for dictionnary in KnownArchs:
+        for dictionnary in ValidArchs:
             arch = dictionnary['arch']
             platform = dictionnary['platform']
             minos = dictionnary['minos']
@@ -275,7 +275,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             shutil.copyfile(OutputLibrary, FrameworkLib)
 
     elif iOS_HasXcodeProject(lib):
-        res = Darwin_RunXcodeBuild(target, lib, iOS_GetXcodeProject(lib), KnownArchs, debug, clean)
+        res = Darwin_RunXcodeBuild(target, lib, iOS_GetXcodeProject(lib), ValidArchs, debug, clean)
 
     else:
         ARLog('The library lib%(lib)s does not contains either an autotools or an Xcode project' % locals())

@@ -86,7 +86,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
                 ARLog('Dependancy lib%(dep)s already built for %(target)s' % locals())
             elif not dep.isAvailableForTarget(target):
                 ARLog('Dependancy lib%(dep)s does not need to be built for %(target)s' % locals())
-            elif Android_BuildLibrary(target, dep, clean, debug):
+            elif Android_BuildLibrary(target, dep, clean, debug, nodeps, inhouse, requestedArchs):
                 ARLog('Dependancy lib%(dep)s built' % locals())
             else:
                 ARLog('Error while building dependancy lib%(dep)s' %locals())
