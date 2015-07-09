@@ -106,8 +106,10 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     ConfigureArgs.extend(extraArgs)
 
     # TEMP ALWAYS USE -g !!!
-    ForceDebugFlags = [ 'CFLAGS=" -g"' ]
-    ConfigureArgs.extend(ForceDebugFlags)
+    if not lib.ext:
+        ConfigureArgs.extend([ 'CFLAGS=" -g"' ])
+    else:
+        ConfigureArgs.extend([ 'CFLAGS=" -s"' ])
     # END OF TEMP ALWAYS USE -g !!!
 
     if inhouse:
