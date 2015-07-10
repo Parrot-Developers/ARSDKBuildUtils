@@ -108,8 +108,9 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     # TEMP ALWAYS USE -g !!!
     if not lib.ext:
         ConfigureArgs.extend([ 'CFLAGS=" -g"' ])
-    #else:
-    #    ConfigureArgs.extend([ 'CFLAGS=" -s"' ])
+    else:
+        # CFLAGS must be set to something else build will fail
+        ConfigureArgs.extend([ 'CFLAGS=" "' ])
     # END OF TEMP ALWAYS USE -g !!!
 
     if inhouse:
