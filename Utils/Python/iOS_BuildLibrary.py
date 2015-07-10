@@ -164,7 +164,6 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             Compiler = iOS_getXCRunExec('clang', SdkLower)
             Ar = iOS_getXCRunExec('ar', SdkLower)
             Ranlib = iOS_getXCRunExec('ranlib', SdkLower)
-            Strip = iOS_getXCRunExec('strip', SdkLower)
 
             # Generate unique alternate install dir for libs
             ArchLibDir = ARPathFromHere('Targets/%(target)s/Build/.install_%(lib)s_%(arch)s_%(debug)s' % locals())
@@ -247,11 +246,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                 return EndDumpArgs(res=False, **args)
             # Get the static libs installed
             liblower = lib.name.lower()
-            newLibs = [ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l]
-            if lib.ext:
-                for libToStrip in newLibs:
-                    ARExecute(Strip + ' -S ' + libToStrip, failOnError=False)
-            BuiltLibs.extend(newLibs)
+            BuiltLibs.extend([ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l])
 
         res = True
         if not clean:
