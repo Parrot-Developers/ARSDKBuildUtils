@@ -115,4 +115,8 @@
   <extrepo url="https://github.com/troydhanson/uthash.git" rev="3022899165f32baaf67efbe79e098f0d5ba62d4f">
   </extrepo>
 
+  <webfile url="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.2.1.tar.gz" storePath="../libressl">
+    <patchFile path="../ARSDKBuildUtils/Patches/libressl-2.2.1.patch"/>
+  </webfile>
+
 </repos>

@@ -140,6 +140,8 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
 
     # Build the autotools part
     BuiltLibs = []
+    sslLibs = []
+    cryptoLibs = []
     if Common_IsConfigureLibrary(lib):
         for dictionnary in ValidArchs:
             arch = dictionnary['arch']
@@ -251,7 +253,13 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             if lib.ext:
                 for libToStrip in newLibs:
                     ARExecute(Strip + ' -S ' + libToStrip, failOnError=False)
-            BuiltLibs.extend(newLibs)
+            if (lib.name == 'libressl'):
+                sslLibs.extend([os.path.join(ArchLibDir, 'libssl.a')])
+                cryptoLibs.extend([os.path.join(ArchLibDir, 'libcrypto.a')])
+                ARExecute('libtool -static -o ' + os.path.join(ArchLibDir, 'libressl.a') + ' ' + os.path.join(ArchLibDir, 'libssl.a') + ' ' + os.path.join(ArchLibDir, 'libcrypto.a'), failOnError=False)
+                BuiltLibs.extend([os.path.join(ArchLibDir, 'libressl.a')])
+            else:
+                BuiltLibs.extend(newLibs)
 
         res = True
         if not clean:
@@ -260,6 +268,12 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             
             libPrefix = 'lib' if not lib.ext else ''
             
+            if (lib.name == 'libressl'):
+                lipoSsl = '%(OutputDir)s/libssl.a' % locals()
+                cryptoSsl = '%(OutputDir)s/libcrypto.a' % locals()
+                ARExecute('lipo ' + ARListAsBashArg(sslLibs) + ' -create -output ' + lipoSsl)
+                ARExecute('lipo ' + ARListAsBashArg(cryptoLibs) + ' -create -output ' + cryptoSsl)
+
             OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s.a' % locals()
             if debug:
                 OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s_dbg.a' % locals()
@@ -276,7 +290,10 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             ARDeleteIfExists(FinalFramework)
             os.makedirs(FinalFramework)
             libIncDirPrefix = 'lib' if not lib.ext else ''
-            shutil.copytree('%(InstallDir)s/include/%(libIncDirPrefix)s%(lib)s' % locals(), FrameworkHeaders)
+            if (lib.name == 'libressl'):
+                shutil.copytree('%(InstallDir)s/include/openssl' % locals(), FrameworkHeaders)
+            else:
+                shutil.copytree('%(InstallDir)s/include/%(libIncDirPrefix)s%(lib)s' % locals(), FrameworkHeaders)
             shutil.copyfile(OutputLibrary, FrameworkLib)
 
     elif iOS_HasXcodeProject(lib):

@@ -104,8 +104,8 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
 
     # Generate configure args
     ConfigureArgs = ['--prefix=%(InstallDir)s' % locals()]
-    ConfigureArgs.extend(lib.extraConfFlags)
     ConfigureArgs.extend(extraArgs)
+    ConfigureArgs.extend(lib.extraConfFlags)
 
     # TEMP ALWAYS USE -g !!!
     if not lib.ext:

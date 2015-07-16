@@ -141,12 +141,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             if not lib.ext:
                 LdFlagsString = 'LDFLAGS=" ' + ARListAsBashArg(LdFlagsArr) + '"'
             else:
-                if lib.name == 'curl':
-                    # Staticaly link openssl to curl
-                    EabiLibDir = os.getcwd() + '/Targets/%(target)s/Install/%(eabi)s/lib' % locals()
-                    LdFlagsString = 'LIBS=" ' + ARListAsBashArg(LdFlagsArr) + ' %(EabiLibDir)s/libssl.a %(EabiLibDir)s/libcrypto.a"' % locals()
-                else:
-                    LdFlagsString = 'LIBS=" ' + ARListAsBashArg(LdFlagsArr) + '"'
+                LdFlagsString = 'LIBS=" ' + ARListAsBashArg(LdFlagsArr) + '"'
 
             ExtraConfFlags.append(LdFlagsString)
             if not lib.ext:

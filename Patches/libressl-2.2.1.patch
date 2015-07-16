@@ -1,0 +1,26 @@
+diff --git libressl-2.2.1/crypto/compat/reallocarray.c libressl-2.2.1-new/crypto/compat/reallocarray.c
+index aa70686..41a3326 100644
+--- libressl-2.2.1/crypto/compat/reallocarray.c
++++ libressl-2.2.1-new/crypto/compat/reallocarray.c
+@@ -19,6 +19,7 @@
+ #include <errno.h>
+ #include <stdint.h>
+ #include <stdlib.h>
++#include <limits.h>
+ 
+ /*
+  * This is sqrt(SIZE_MAX+1), as s1*s2 <= SIZE_MAX
+diff --git libressl-2.2.1/include/machine/endian.h libressl-2.2.1-new/include/machine/endian.h
+index 5ec39af..6f6d31f 100644
+--- libressl-2.2.1/include/machine/endian.h
++++ libressl-2.2.1-new/include/machine/endian.h
+@@ -21,6 +21,9 @@
+ #define BYTE_ORDER BIG_ENDIAN
+ #endif
+ 
++#elif defined(__ANDROID__)
++#include_next <machine/endian.h>
++
+ #elif defined(__linux__)
+ #include <endian.h>
+ 
