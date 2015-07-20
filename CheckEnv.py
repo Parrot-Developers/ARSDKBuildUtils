@@ -151,6 +151,11 @@ if sys.version_info < (2, 7):
     sys.exit(1)
 
 
+if ' ' in MYDIR:
+    ARVBPrint(logcolors.FAIL + ' Bad folder name.' + logcolors.DEF + ' The SDK needs an absolute path without spaces. There is at least one space in the current path :')
+    ARVBPrint(                 '                   "' + MYDIR + '"')
+    ARVBPrint('')
+    sys.exit(1)
 
 DirLastPath=os.path.basename(MYDIR)
 if DirLastPath != 'ARSDKBuildUtils':
