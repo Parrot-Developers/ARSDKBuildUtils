@@ -82,9 +82,7 @@
     <extraConfigureFlag value="--disable-shared"/>
   </extlib>
 
-  <lib name="ARSAL">
-    <dep name="libressl"/>
-  </lib>
+  <lib name="ARSAL"/>
   
   <lib name="ARNetworkAL">
     <dep name="ARSAL"/>
