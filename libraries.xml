@@ -114,6 +114,7 @@
 
   <lib name="ARStream">
     <dep name="ARNetwork"/>
+	<extraConfigureFlag value="LDFLAGS=-lm"/>
   </lib>
 
   <lib name="ARMavlink">
