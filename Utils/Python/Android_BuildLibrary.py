@@ -183,6 +183,8 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
                     for p_lib in p_updatedlib.soLibs:
                         if not p_lib in lib.soLibs:
                             lib.soLibs.append(p_lib)
+        pool.close()
+        pool.join()
 
         if forcedMalloc:
             ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
