@@ -31,67 +31,7 @@
 import sys
 import os
 import re
-
-MYDIR=''
-if __name__ == '__main__':
-    MYDIR=os.path.dirname(sys.argv[0])
-if '' == MYDIR:
-    MYDIR='.'
-WORKDIR=os.getcwd()
-CONFDIR=''
-if __name__ == '__main__':
-    CONFDIR=sys.argv[1]
-
-#################################
-# Get info from configure.ac    #
-# file                          #
-#################################
-
-LIB_NAME=''
-LIB_MODULE=''
-LIB_VERSION=''
-if __name__ == '__main__':
-    configureAcFile = open(CONFDIR + '/configure.ac', 'rb')
-    AC_INIT_LINE=configureAcFile.readline().decode("utf-8")
-    while not AC_INIT_LINE.startswith('AC_INIT') and '' != AC_INIT_LINE:
-        AC_INIT_LINE=configureAcFile.readline().decode("utf-8")
-    if '' == AC_INIT_LINE:
-        ARPrint('Unable to read from configure.ac file !')
-        sys.exit(1)
-
-    AC_ARGS=re.findall(r'\[[^]]*\]', AC_INIT_LINE)
-    LIB_NAME=AC_ARGS[0].replace('[', '').replace(']', '')
-    LIB_MODULE=LIB_NAME.replace('lib', '')
-    LIB_VERSION=AC_ARGS[1].replace('[', '').replace(']', '')
-
-#################################
-# Generic infos about the lib   #
-#################################
-
-# Directories
-SRC_DIR      = CONFDIR + '/../Sources/'
-INC_DIR      = CONFDIR + '/../Includes/' + LIB_NAME + '/'
-BUILD_DIR    = CONFDIR + '/'
-JNI_C_DIR    = CONFDIR + '/../JNI/c/'
-JNI_JAVA_DIR = CONFDIR + '/../JNI/java/'
-
-# Java/JNI package
-JAVA_PACKAGE = 'com.parrot.arsdk.' + LIB_MODULE.lower()
-JAVA_PACKAGE_DIR = JAVA_PACKAGE.replace('.', '/')
-JAVA_OUT_DIR = JNI_JAVA_DIR + JAVA_PACKAGE_DIR + '/'
-
-# Create dir if neededif not os.path.exists(SRC_DIR):
-if __name__ == '__main__':
-    if not os.path.exists(SRC_DIR):
-        os.makedirs(SRC_DIR)
-    if not os.path.exists(INC_DIR):
-        os.makedirs(INC_DIR)
-    if not os.path.exists(JNI_C_DIR):
-        os.makedirs(JNI_C_DIR)
-    if not os.path.exists(JNI_JAVA_DIR):
-        os.makedirs(JNI_JAVA_DIR)
-    if not os.path.exists(JAVA_OUT_DIR):
-        os.makedirs(JAVA_OUT_DIR)
+from optparse import OptionParser
 
 # Generated file disclaimer
 GENERATED_FILE_DISCLAIMER='''/*
@@ -183,7 +123,7 @@ class AREnumEntry:
         self.value = value
         self.comment = comment
 
-def readEnumEntriesFromFile(filename):
+def readEnumEntriesFromFile(filename, inputDir, outputDir):
     ALL_LINES = [line.strip() for line in open(filename)]
     DATA_LINES = []
     # Strip empty lines
@@ -212,7 +152,7 @@ def readEnumEntriesFromFile(filename):
                 for enum in allEnums:
                     if enum.name == enumName:
                         cFileName = os.path.dirname(filename) + '/' + os.path.basename(filename).replace('.h', '.c')
-                        cFileName = cFileName.replace(INC_DIR, SRC_DIR)
+                        cFileName = cFileName.replace(inputDir, outputDir)
                         prototype = line.rstrip(';')
                         enum.setToStringFileName(cFileName, prototype)
                         break
@@ -275,14 +215,14 @@ def entryConstructor(entry, last=False):
     retVal += '\n'
     return retVal
 
-def writeEnumToJavaFile(enumType):
+def writeEnumToJavaFile(enumType, outDir, javaPackage):
     CLASS_NAME = enumType.name.lstrip('e') + '_ENUM'
-    JFILE_NAME = JAVA_OUT_DIR + CLASS_NAME + '.java'
+    JFILE_NAME = outDir + CLASS_NAME + '.java'
     jfile      = open(JFILE_NAME, 'w')
 
     jfile.write(GENERATED_FILE_DISCLAIMER)
     jfile.write('\n')
-    jfile.write('package ' + JAVA_PACKAGE + ';\n')
+    jfile.write('package ' + javaPackage + ';\n')
     jfile.write('\n')
     jfile.write('import java.util.HashMap;\n')
     jfile.write('\n')
@@ -352,11 +292,11 @@ def writeEnumToJavaFile(enumType):
     jfile.write('}\n')
     jfile.close()
 
-def writeToStringFunction(enumType):
+def writeToStringFunction(enumType, libName):
     if not enumType.hasToString:
         return
     CNAME = os.path.basename(enumType.toStringFileName)
-    HNAME = LIB_NAME + '/' + CNAME.replace('.c', '.h')
+    HNAME = libName + '/' + CNAME.replace('.c', '.h')
     VARNAME, _, _ = enumType.toStringPrototype.partition(')')
     _, _, VARNAME = VARNAME.partition(enumType.name + ' ')
 
@@ -388,35 +328,78 @@ def writeToStringFunction(enumType):
 
     cfile.close()
 
-def writeJavaEnumFileFormHeaderFile(headerFile, javaOutDir, javaPackage):
-    global JNI_JAVA_DIR
-    global JAVA_PACKAGE
-    global JAVA_PACKAGE_DIR
-    global JAVA_OUT_DIR
-    JNI_JAVA_DIR=javaOutDir
-    JAVA_PACKAGE = javaPackage
-    JAVA_PACKAGE_DIR = JAVA_PACKAGE.replace('.', '/')
-    JAVA_OUT_DIR = JNI_JAVA_DIR + "/" + JAVA_PACKAGE_DIR + '/'
-    if not os.path.exists(JAVA_OUT_DIR):
-        os.makedirs(JAVA_OUT_DIR)
-    allEnums = readEnumEntriesFromFile(headerFile)
-    for enumType in allEnums:
-        writeEnumToJavaFile(enumType)
-        writeToStringFunction(enumType)
-
 #################################
 # Generate JAVA Enums from C    #
 # Main                          #
 #################################
 
-if __name__ == '__main__':
-    for fname in os.listdir(INC_DIR):
-        if fname.endswith('.h'):
-            completeFile = INC_DIR + fname
-            allEnums = readEnumEntriesFromFile(completeFile)
-            for enumType in allEnums:
-                writeEnumToJavaFile(enumType)
-                writeToStringFunction(enumType)
+#################################
+# Generic infos about the lib   #
+#################################
 
+def generateFiles(topDir, libName):
+    # Directories
+    INPUT_DIR = topDir + '/Includes/' + libName + '/'
+
+    # Java/JNI package
+    LIB_MODULE=libName.replace('lib', '')
+    JAVA_PACKAGE = 'com.parrot.arsdk.' + LIB_MODULE.lower()
+    JAVA_PACKAGE_DIR = JAVA_PACKAGE.replace('.', '/')
+
+    if topDir.endswith('/gen'):
+        OUTPUT_DIR = topDir + '/Sources/'
+        JAVA_OUT_DIR = topDir + '/JNI/java/' + JAVA_PACKAGE_DIR + '/'
+    else:
+        OUTPUT_DIR = topDir + '/gen/Sources/'
+        JAVA_OUT_DIR = topDir + '/gen/JNI/java/' + JAVA_PACKAGE_DIR + '/'
+
+    # Create dir if neededif not os.path.exists(OUTPUT_DIR):
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists(INPUT_DIR):
+        os.makedirs(INPUT_DIR)
+    if not os.path.exists(JAVA_OUT_DIR):
+        os.makedirs(JAVA_OUT_DIR)
+
+    for fname in os.listdir(INPUT_DIR):
+        if fname.endswith('.h'):
+            completeFile = INPUT_DIR + fname
+            allEnums = readEnumEntriesFromFile(completeFile, INPUT_DIR, OUTPUT_DIR)
+            for enumType in allEnums:
+                writeEnumToJavaFile(enumType, JAVA_OUT_DIR, JAVA_PACKAGE)
+                writeToStringFunction(enumType, libName)
+
+def main():
+    parser = OptionParser()
+    parser.add_option("-r", "--root", dest="root",
+                      default='',
+                      help="root directory")
+    parser.add_option("-l", "--lib", dest="lib",
+                      default='',
+                      help="libAR* library name")
+    (options, args) = parser.parse_args()
+    if (options.root == '') and (options.lib == ''):
+        confDir=sys.argv[1]
+        configureAcFile = open(confDir + '/configure.ac', 'rb')
+        AC_INIT_LINE=configureAcFile.readline().decode("utf-8")
+        while not AC_INIT_LINE.startswith('AC_INIT') and '' != AC_INIT_LINE:
+            AC_INIT_LINE=configureAcFile.readline().decode("utf-8")
+        if '' == AC_INIT_LINE:
+            ARPrint('Unable to read from configure.ac file !')
+            sys.exit(1)
+        AC_ARGS=re.findall(r'\[[^]]*\]', AC_INIT_LINE)
+        libName=AC_ARGS[0].replace('[', '').replace(']', '')
+        topDir=confDir + '/..'
+    elif (options.root == '') or (options.lib == ''):
+            ARPrint('--lib and --root must be present together !')
+            sys.exit(1)
+    else:
+        libName=options.lib
+        topDir=options.root
+    generateFiles(topDir, libName)
+    generateFiles(topDir + '/gen', libName)
+
+if __name__ == '__main__':
+    main()
 
 #END

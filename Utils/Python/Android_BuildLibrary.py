@@ -241,6 +241,7 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
         # Declare dirs
         JniJavaDir  = '%(JniPath)s/java' % locals()
         JniCDir     = '%(JniPath)s/c' % locals()
+        JniJavaGenDir = '%(JniPath)s/../gen/JNI/java' % locals()
         BuildSrcDir = '%(ActualJavaBuildDir)s/src' % locals()
         BuildJniDir = '%(ActualJavaBuildDir)s/jni' % locals()
         if not clean:
@@ -248,6 +249,8 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             if not os.path.exists(ActualJavaBuildDir):
                 os.makedirs(ActualJavaBuildDir)
             ARCopyAndReplace(JniJavaDir, BuildSrcDir, deletePrevious=True)
+            if os.path.exists(JniJavaGenDir):
+                ARCopyAndReplace(JniJavaGenDir, BuildSrcDir, deletePrevious=False)
             ARCopyAndReplace(JniCDir, BuildJniDir, deletePrevious=True, ignoreRegexpsForDeletion=[r'.*mk'])
             # Create Android.mk / Application.mk / AndroidManifest.xml
             Android_CreateApplicationMk(ActualJavaBuildDir, [arch['eabi'] for arch in ValidArchs])
