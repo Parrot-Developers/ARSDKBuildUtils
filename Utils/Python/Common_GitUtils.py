@@ -85,13 +85,13 @@ def checkAllReposUpToDate(repos, MYDIR, baseRepoUrl, defaultBaseRepoUrl, nonInte
                 root, Ext = os.path.splitext(webfile.name)
                 spath = Chdir(webfile.storePath)
                 if Ext in ['.gz', '.tgz']:
-                    ARExecute('tar xzf ' + webfile.name)
+                    ARExecute('tar xzf ' + webfile.name, failOnError=True)
                 elif Ext in ['.bz2', '.tbz2']:
-                    ARExecute('tar xjf ' + webfile.name)
+                    ARExecute('tar xjf ' + webfile.name, failOnError=True)
                 elif Ext in ['.zip']:
-                    ARExecute('unzip ' + webfile.name)
+                    ARExecute('unzip ' + webfile.name, failOnError=True)
                 for cmd in webfile.additionnalCommands:
-                    ARExecute(cmd)
+                    ARExecute(cmd, failOnError=True)
                 spath.exit()
         for patch in webfile.patches:
             patchPath = ARPathFromHere(patch)

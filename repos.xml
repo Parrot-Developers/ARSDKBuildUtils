@@ -81,21 +81,21 @@
 
   <!-- SDK Repositories -->
 
-  <repo name="libARCommands" rev="0629ad54458d5c50d65c08de7a9b5654fc9e21d2"/>
-  <repo name="libARDiscovery" rev="e37ed35ce31351ffe499a0f347c2503675e01443"/>
-  <repo name="libARNetwork" rev="27ff2ce5ef85d13ed1b1fc5b9a3cdd3734de024a"/>
-  <repo name="libARNetworkAL" rev="26dd083c97fdba7113a0fbbdf7a878e4ac79307f"/>
-  <repo name="libARSAL" rev="e9d303a09d6b0af828bbfd2241c1543c6f97c86a"/>
-  <repo name="libARStream" rev="7dc2f178ca28c4a545a39570bc46b20fbcd845ec"/>
-  <repo name="libARMedia" rev="b097767cd879b7482bcd998b16b698dbbaf217f2"/>
-  <repo name="libARUtils" rev="59982c66b828f4b142b33f980da60cd40303ce38"/>
-  <repo name="libARUpdater" rev="2a34eac19ec1e069917d0a5adeedf9e02e1cd050"/>
-  <repo name="libARDataTransfer" rev="715e36bfabe49faa046497a81739f7cc90a2f41b"/>
-  <repo name="libARMavlink" rev="d3170c169347dbbd285863d704385ecfeb1660e8"/>
-  <repo name="libARController" rev="a0ad7c1f562748bd83ac50404974ecbe1c1e2f59"/>
-  <repo name="Samples" rev="a188869af1d5e23070bf8827d2743f89f2c1150f" forceBaseUrl="TRUE"/>
+  <repo name="libARCommands" rev="7e2f55fafcd45ba2380ca2574a08b7359c005f47"/>
+  <repo name="libARDiscovery" rev="94ec671934c29cdb23260b41f74d571d0b9e36e9"/>
+  <repo name="libARNetwork" rev="451ef60ebd3877893a4cd9810d5a3c26b9767a16"/>
+  <repo name="libARNetworkAL" rev="a5fd8e4c5c383363fc3e057c827d8f4220cf5de4"/>
+  <repo name="libARSAL" rev="d477fba948b5af5a419e83e58e0333947d4020af"/>
+  <repo name="libARStream" rev="581fc91e4b441620cc12f99ebe435ddca9ad9a6a"/>
+  <repo name="libARMedia" rev="11eacf0d8af518ddca88b5d6fd6aede31742d902"/>
+  <repo name="libARUtils" rev="aacddc37c8c964853ec2910b75421be270a549ce"/>
+  <repo name="libARUpdater" rev="69b15b3983f545b519234ed103cf36b03cf102de"/>
+  <repo name="libARDataTransfer" rev="f91a036f2e6097b3ee0c05a20abe9aecce74a2f0"/>
+  <repo name="libARMavlink" rev="5589a0b56a11839b3e439084ef06f8d9433a717d"/>
+  <repo name="libARController" rev="8aaa4fe7274d1177cbab011e775c4f6137c73742"/>
+  <repo name="Samples" rev="1708201ddbc65019be54021232fe41c533dea3af" forceBaseUrl="TRUE"/>
 
-  <repo name="curl" rev="curl-7_36_0-arsdk" forceBaseUrl="TRUE"/>
+  <repo name="curl" rev="curl-7_36_0-arsdk-1" forceBaseUrl="TRUE"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">

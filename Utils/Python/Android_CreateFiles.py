@@ -99,7 +99,7 @@ def Android_CreateAndroidMk(target, projectRoot, installRoot, lib, debug, hasNat
     andMk.write('\n')
     # Write prebuilt deps (use shared)
     lib.runOnAllDeps(target, Android_AppendDepsPrebuiltAndroidMk, mkfile=andMk, array=prebuilts, suffix=suffix, rootDir=installRoot)
-    # Write prebuilt self (use static)
+    # Write prebuilt self (use shared)
     libUpper = lib.name.upper()
     libLower = lib.name.lower()
     if hasNative:

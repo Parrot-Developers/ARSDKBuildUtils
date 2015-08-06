@@ -87,7 +87,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                 ARLog('Dependancy lib%(dep)s already built for %(target)s' % locals())
             elif not dep.isAvailableForTarget(target):
                 ARLog('Dependancy lib%(dep)s does not need to be built for %(target)s' % locals())
-            elif iOS_BuildLibrary(target, dep, clean, debug):
+            elif iOS_BuildLibrary(target, dep, clean, debug, nodeps, inhouse, requestedArchs):
                 ARLog('Dependancy lib%(dep)s built' % locals())
             else:
                 ARLog('Error while building dependancy lib%(dep)s' %locals())
@@ -111,7 +111,9 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
     KnownArchs = [ { 'arch':'armv7', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'armv7s', 'platform':'iPhoneOS', 'minos':'iphoneos' },
                    { 'arch':'arm64', 'platform':'iPhoneOS', 'minos':'iphoneos' },
-                   { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+    #               { 'arch':'i386', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' },
+                   { 'arch':'x86_64', 'platform':'iPhoneSimulator', 'minos':'ios-simulator' }]
+
     KnownEabis = [ arch['arch'] for arch in KnownArchs ]
     ValidArchs = []
 
@@ -139,7 +141,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
     # Build the autotools part
     BuiltLibs = []
     if Common_IsConfigureLibrary(lib):
-        for dictionnary in KnownArchs:
+        for dictionnary in ValidArchs:
             arch = dictionnary['arch']
             platform = dictionnary['platform']
             minos = dictionnary['minos']
@@ -162,6 +164,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             Compiler = iOS_getXCRunExec('clang', SdkLower)
             Ar = iOS_getXCRunExec('ar', SdkLower)
             Ranlib = iOS_getXCRunExec('ranlib', SdkLower)
+            Strip = iOS_getXCRunExec('strip', SdkLower)
 
             # Generate unique alternate install dir for libs
             ArchLibDir = ARPathFromHere('Targets/%(target)s/Build/.install_%(lib)s_%(arch)s_%(debug)s' % locals())
@@ -244,7 +247,11 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                 return EndDumpArgs(res=False, **args)
             # Get the static libs installed
             liblower = lib.name.lower()
-            BuiltLibs.extend([ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l])
+            newLibs = [ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l]
+            if lib.ext:
+                for libToStrip in newLibs:
+                    ARExecute(Strip + ' -S ' + libToStrip, failOnError=False)
+            BuiltLibs.extend(newLibs)
 
         res = True
         if not clean:
@@ -273,7 +280,7 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             shutil.copyfile(OutputLibrary, FrameworkLib)
 
     elif iOS_HasXcodeProject(lib):
-        res = Darwin_RunXcodeBuild(target, lib, iOS_GetXcodeProject(lib), KnownArchs, debug, clean)
+        res = Darwin_RunXcodeBuild(target, lib, iOS_GetXcodeProject(lib), ValidArchs, debug, clean)
 
     else:
         ARLog('The library lib%(lib)s does not contains either an autotools or an Xcode project' % locals())

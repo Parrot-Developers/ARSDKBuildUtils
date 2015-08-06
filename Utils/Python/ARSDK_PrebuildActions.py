@@ -194,8 +194,14 @@ def readEnumEntriesFromFile(filename):
     currentEnumType = AREnumType()
     allEnums = []
     foundEnum = False
+    noEnumInThisFile = False
     previousValue = -1 # So next value is zero
     for line in DATA_LINES:
+
+        if line == '// ARSDK_NO_ENUM_PREPROCESS //':
+            noEnumInThisFile = True
+            break
+
         if not foundEnum:
             if line.startswith('typedef enum'):
                 foundEnum = True
@@ -248,7 +254,11 @@ def readEnumEntriesFromFile(filename):
                     comment = comment.strip()
                 entry = AREnumEntry(name, value, comment)
                 currentEnumType.addEntry(entry)
-    return allEnums
+
+    if noEnumInThisFile:
+        return []
+    else:
+        return allEnums
 
 def entryConstructor(entry, last=False):
     retVal = '   '
