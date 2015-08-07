@@ -77,7 +77,7 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="17c39b4b09031158e862ac100d6283cf9859e1b2" forceBaseUrl="TRUE"/>
+  <repo name="Docs" rev="64e23ba6246e3638ef72d7337506d83246dc6a9b" forceBaseUrl="TRUE"/>
 
   <!-- SDK Repositories -->
   <repo name="libARCommands" rev="074b91a75b554332d848e2f4e9d347462abff3cc"/>
@@ -92,7 +92,7 @@
   <repo name="libARDataTransfer" rev="6c43f24653c612bd03cf393925b47f89f197e21e"/>
   <repo name="libARMavlink" rev="8a51b335f6f5b235cf65d83df11ffb003d150f52"/>
   <repo name="libARController" rev="8aaa4fe7274d1177cbab011e775c4f6137c73742"/>
-  <repo name="Samples" rev="1708201ddbc65019be54021232fe41c533dea3af" forceBaseUrl="TRUE"/>
+  <repo name="Samples" rev="f7be98430500dde8758cfa7e6c7b9f479a5d8de0" forceBaseUrl="TRUE"/>
 
   <repo name="curl" rev="curl-7_36_0-arsdk-1" forceBaseUrl="TRUE"/>
 
