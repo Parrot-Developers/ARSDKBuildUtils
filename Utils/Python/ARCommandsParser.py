@@ -472,7 +472,9 @@ def parseAllProjects(projects, pathToARCommands, genDebug=False, mergeDebugProje
 
     if 'all' in projects:
         projects = []
-        for files in os.listdir (XMLFILENAME_PREFIX):
+        listDir = os.listdir(XMLFILENAME_PREFIX)
+        listDir = sorted(listDir, key=str)
+        for files in listDir:
             if files.endswith (XMLFILENAME_SUFFIX):
                 proj = files.replace (XMLFILENAME_SUFFIX,'')
                 projects.append (proj)
