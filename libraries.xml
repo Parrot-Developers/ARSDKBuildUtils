@@ -107,9 +107,6 @@
 
   <lib name="ARCommands">
     <dep name="ARSAL"/>
-    <configureDepFile name="Xml/generateLibARCommands.py"/>
-    <configureDepFile name="Xml/*.xml"/>
-    <extraConfigureFlag value="--enable-debug-commands"/>
   </lib>
 
   <lib name="ARStream">
@@ -201,9 +198,6 @@
     <dep name="ARStream"/>
     <dep name="json"/>
     <prebuiltdep name="uthash"/>
-    <configureDepFile name="Python/*.py"/>
-    <configureDepFile name="Xml/*.xml"/>
-    <configureDepFile name="../libARCommands/Xml/*.xml"/>
 </lib>
 
 </libraries>
