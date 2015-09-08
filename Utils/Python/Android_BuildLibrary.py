@@ -155,7 +155,6 @@ def Android_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, in
             stripVersionNumber = lib.ext and not clean
 
             if isMp:
-                print "Apply async"
                 poolRes = pool.apply_async(Common_BuildConfigureLibrary,
                                            args=(target, lib,),
                                            kwds={'extraArgs':ExtraConfFlags,

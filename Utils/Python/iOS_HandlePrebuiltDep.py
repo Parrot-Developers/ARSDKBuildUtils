@@ -8,7 +8,7 @@
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in
-      the documentation and/or other materials provided with the 
+      the documentation and/or other materials provided with the
       distribution.
     * Neither the name of Parrot nor the names
       of its contributors may be used to endorse or promote products
@@ -22,7 +22,7 @@
     COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
     AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
     OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -38,7 +38,7 @@ from ARFuncs import *
 def iOS_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=None, clean=False, debug=False):
     args = dict(locals())
     StartDumpArgs(**args)
-    
+
     Common_HandlePrebuiltDep(target, pb, forcedOutputDir=forcedOutputDir, outputSuffixes=outputSuffixes)
 
     res = True
@@ -56,12 +56,12 @@ def iOS_HandlePrebuiltDep(target, pb, forcedOutputDir=None, outputSuffixes=None,
                 Framework     = '%(FrameworksDir)s/%(lib)s.framework' % locals()
                 FrameworkDbg  = '%(FrameworksDir)s/%(lib)s_dbg.framework' % locals()
                 OutputDir     = '%(InstallDir)s/lib/' % locals()
-    
+
                 if not os.path.exists(OutputDir):
                     os.makedirs(OutputDir)
-            	# Create framework
-            	FinalFramework = Framework
-            	if debug:
+                # Create framework
+                FinalFramework = Framework
+                if debug:
                     FinalFramework = FrameworkDbg
                 suffix = '_dbg' if debug else ''
                 FrameworkLib     = '%(FinalFramework)s/%(lib)s%(suffix)s' % locals()

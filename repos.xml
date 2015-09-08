@@ -98,7 +98,7 @@
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
-    <postDownloadAction command="../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
+    <postDownloadAction command="python2 ../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
   </extrepo>
 
   <!-- External tar -->

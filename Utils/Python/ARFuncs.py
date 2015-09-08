@@ -89,7 +89,7 @@ def ARExecute(cmdline, isShell=True, failOnError=False, printErrorMessage=True):
 def ARExecuteGetStdout(args, isShell=False, failOnError=True, printErrorMessage=True):
     if printErrorMessage:
         ARLog('Running <' + ARListAsBashArg(args) + '>')
-    p = subprocess.Popen(args, shell=isShell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(args, shell=isShell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     out, err = p.communicate()
     ret = p.wait()
     if ret:
