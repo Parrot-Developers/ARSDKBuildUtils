@@ -157,8 +157,6 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
         #print 'ARG ' + arg
         match = re.search('%\{[a-zA-Z_]*\}%', arg)
         if match is not None:
-            print 'MATCH ' + match.group(0)
-            print 'REPLACE ' + re.sub('%\{.*\}%', InstallDir, arg)
             ConfigureArgs[index] = re.sub('%\{[a-zA-Z_]*\}%', InstallDir, arg)
         index = index + 1
     Argn = len(ConfigureArgsDbg)
@@ -168,8 +166,6 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
         #print 'ARG ' + arg
         match = re.search('%\{[a-zA-Z_]*\}%', arg)
         if match is not None:
-            print 'MATCH ' + match.group(0)
-            print 'REPLACE ' + re.sub('%\{.*\}%', InstallDir, arg)
             ConfigureArgsDbg[index] = re.sub('%\{[a-zA-Z_]*\}%', InstallDir, arg)
         index = index + 1
 
