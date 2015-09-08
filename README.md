@@ -6,7 +6,12 @@ ARDroneSDK3
 It can be used to write applications which control the latest generation of Parrot Drones:
 - Bebop Drone
 - Rolling Spider
+- Airborne Night
+- Airborne Cargo
+- Hydrofoil
 - Jumping Sumo
+- Jumping Night
+- Jumping Race
 - Skycontroller
 
 <br>
