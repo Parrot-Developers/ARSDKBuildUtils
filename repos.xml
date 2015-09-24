@@ -85,7 +85,7 @@
   <repo name="libARNetwork" rev="a429697cf59cd5f57d8cf3c21fdbfdb9f0967de6"/>
   <repo name="libARNetworkAL" rev="43b30fd4887997da740e76cca5dbc2e3ce39afb5"/>
   <repo name="libARSAL" rev="9731602a9c943fb9c38796fa829a0639e2b66c0e"/>
-  <repo name="libARStream" rev="e477a63f33907baead70306b8e4afb35d70ea9fa"/>
+  <repo name="libARStream" rev="e6c5fcd3101c8d3e8ee6987a067066982086b4a3"/>
   <repo name="libARMedia" rev="a0050560ef280c4a22dc02b06828e7d5c41ab9b2"/>
   <repo name="libARUtils" rev="af20dfd20fa407eaf50cd57107381baf4d29f4ae"/>
   <repo name="libARUpdater" rev="7f9ebebc58987c638650a4f50ae0b683d7887a9f"/>
