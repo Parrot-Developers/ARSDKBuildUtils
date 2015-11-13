@@ -77,29 +77,28 @@
     -->
 
   <!-- Utils Repositories -->
-  <repo name="Docs" rev="64e23ba6246e3638ef72d7337506d83246dc6a9b" forceBaseUrl="TRUE"/>
+  <repo name="Docs" rev="f6ac7ba5d6343ccfa73fbd4ddc611c13560b7550" forceBaseUrl="TRUE"/>
 
   <!-- SDK Repositories -->
-
-  <repo name="libARCommands" rev="7e2f55fafcd45ba2380ca2574a08b7359c005f47"/>
-  <repo name="libARDiscovery" rev="94ec671934c29cdb23260b41f74d571d0b9e36e9"/>
-  <repo name="libARNetwork" rev="451ef60ebd3877893a4cd9810d5a3c26b9767a16"/>
-  <repo name="libARNetworkAL" rev="a5fd8e4c5c383363fc3e057c827d8f4220cf5de4"/>
-  <repo name="libARSAL" rev="1e06743ecba5c467092758e79470968f69764af6"/>
-  <repo name="libARStream" rev="581fc91e4b441620cc12f99ebe435ddca9ad9a6a"/>
-  <repo name="libARMedia" rev="11eacf0d8af518ddca88b5d6fd6aede31742d902"/>
-  <repo name="libARUtils" rev="aacddc37c8c964853ec2910b75421be270a549ce"/>
-  <repo name="libARUpdater" rev="69b15b3983f545b519234ed103cf36b03cf102de"/>
-  <repo name="libARDataTransfer" rev="f91a036f2e6097b3ee0c05a20abe9aecce74a2f0"/>
-  <repo name="libARMavlink" rev="5589a0b56a11839b3e439084ef06f8d9433a717d"/>
-  <repo name="libARController" rev="a0ad7c1f562748bd83ac50404974ecbe1c1e2f59"/>
+  <repo name="libARCommands" rev="e1cbcad39d6b2999faa457a1d42d0ea3a1060765"/>
+  <repo name="libARDiscovery" rev="827cdd8b62441cbefdc4aab2f8a73967a1ae6d1d"/>
+  <repo name="libARNetwork" rev="891ea46bfb4967825a21e52a06235ef23aec0264"/>
+  <repo name="libARNetworkAL" rev="1ba0e36da8cc43852b8b0614682e48a9bf9c91ca"/>
+  <repo name="libARSAL" rev="b748d3e0e8ce5885b3fe385a8e75c664e7a6685a"/>
+  <repo name="libARStream" rev="8f30f3695f959396b675995812172cf7c4af0e30"/>
+  <repo name="libARMedia" rev="a0050560ef280c4a22dc02b06828e7d5c41ab9b2"/>
+  <repo name="libARUtils" rev="e5a53995ec688057ee99775ba1bc31efc297a0a8"/>
+  <repo name="libARUpdater" rev="7f9ebebc58987c638650a4f50ae0b683d7887a9f"/>
+  <repo name="libARDataTransfer" rev="a4f205d6c3e3cbdf8c20cacaeee0c3b8eef08326"/>
+  <repo name="libARMavlink" rev="8160dd1e1ffb71aa3c48c152783a2f6f034f53b6"/>
+  <repo name="libARController" rev="1ce7953aea6cd595d9c6fd13a1815b6caf281386"/>
   <repo name="Samples" rev="7be6e28ce0a58f1deffa1f0a403c7255dcdf0e4c" forceBaseUrl="TRUE"/>
 
   <repo name="curl" rev="curl-7_36_0-arsdk-1" forceBaseUrl="TRUE"/>
 
   <!-- External Repositories -->
   <extrepo url="https://github.com/mavlink/mavlink.git" rev="1.0.11">
-    <postDownloadAction command="../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
+    <postDownloadAction command="python2 ../mavlink/generator/mavgen.py ../libARMavlink/Build/common.xml -o ../mavlink/generated/include/mavlink --lang C"/>
   </extrepo>
 
   <!-- External tar -->
@@ -115,5 +114,9 @@
   
   <extrepo url="https://github.com/troydhanson/uthash.git" rev="3022899165f32baaf67efbe79e098f0d5ba62d4f">
   </extrepo>
+
+  <webfile url="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.2.1.tar.gz" storePath="../libressl">
+    <patchFile path="../ARSDKBuildUtils/Patches/libressl-2.2.1.patch"/>
+  </webfile>
 
 </repos>

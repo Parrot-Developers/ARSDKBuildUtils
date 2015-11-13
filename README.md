@@ -37,14 +37,14 @@ It's BSD license allows to use, change, distribute with no restriction.
 Contributions and new feature discussions are highly appreciated.
 
 
-**The latest release version is tagged ARSDK3_version_3_6**. This version of the SDK is the one used in the 3.6 versions of FreeFlight 3. <br/>
+**The latest release version is tagged ARSDK3_version_3_7**. This version of the SDK is the one used in the 3.7 versions of FreeFlight 3. <br/>
 It is fully compatible with the versions :
 
-* 2.0.29 and later of the Bebop drone
+* 2.0.57 and later of the Bebop drone
 * 1.99.2 of the Rolling Spider
-* 2.0.31 of the Airbornes
+* 2.1.7 of the Airbornes
 * 1.99.0 of the Jumping Sumo
-* 2.0.30 of the Jumping Sumo Evos
+* 2.1.5 of the Jumping Sumo Evos
 
 Usage
 -------------
