@@ -34,6 +34,7 @@ from Darwin_RunXcodeBuild import *
 from iOS_HandlePrebuiltDep import *
 import shutil
 import re
+from multiprocessing import Lock, Pool, Manager
 
 XCRunCache = {}
 
@@ -65,7 +66,29 @@ def iOS_GetXcodeProject(lib):
 def iOS_HasXcodeProject(lib):
     return iOS_GetXcodeProject(lib) is not None
 
-def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None):
+def iOS_MakePostProcessCb(lib, BuiltLibs, sslLibs, cryptoLibs, Strip, ArchLibDir):
+    def iOS_PostProcessCb(arg):
+        p_res = arg[0]
+        p_updatedlib = arg[1]
+            
+        # Get the static libs installed
+        if p_res:
+            liblower = lib.name.lower()
+            newLibs = [ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l]
+            if lib.ext:
+                for libToStrip in newLibs:
+                    ARExecute(Strip + ' -S ' + libToStrip, failOnError=False)
+            if (lib.name == 'libressl'):
+                sslLibs.extend([os.path.join(ArchLibDir, 'libssl.a')])
+                cryptoLibs.extend([os.path.join(ArchLibDir, 'libcrypto.a')])
+                ARExecute('libtool -static -o ' + os.path.join(ArchLibDir, 'libressl.a') + ' ' + os.path.join(ArchLibDir, 'libssl.a') + ' ' + os.path.join(ArchLibDir, 'libcrypto.a'), failOnError=False)
+                BuiltLibs.extend([os.path.join(ArchLibDir, 'libressl.a')])
+            else:
+                BuiltLibs.extend(newLibs)
+        
+    return iOS_PostProcessCb
+
+def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhouse=False, requestedArchs=None, isMp=False):
     args = dict(locals())
 
     StartDumpArgs(**args)
@@ -137,10 +160,24 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
     Framework     = '%(FrameworksDir)s/%(libPrefix)s%(lib)s.framework' % locals()
     FrameworkDbg  = '%(FrameworksDir)s/%(libPrefix)s%(lib)s_dbg.framework' % locals()
 
-
     # Build the autotools part
     BuiltLibs = []
+    sslLibs = []
+    cryptoLibs = []
     if Common_IsConfigureLibrary(lib):
+        # Add extra exports to force configure to assume that we have a working malloc
+        # If not set, configure will fail the malloc test and will use 'rpl_malloc' and 'rpl_realloc'
+        # for libraries which defines the AC_FUNC_MALLOC in their configure.ac
+        # This leads to link issues for programs.
+        forcedMalloc = ARSetEnvIfEmpty('ac_cv_func_malloc_0_nonnull', 'yes')
+        forcedRealloc = ARSetEnvIfEmpty('ac_cv_func_realloc_0_nonnull', 'yes')
+        pool = Pool(processes=len(ValidArchs))
+        poolResults = []
+        retStatus = True
+        bLock = Manager().Lock()
+        cLock = Manager().Lock()
+        mLock = None
+        
         for dictionnary in ValidArchs:
             arch = dictionnary['arch']
             platform = dictionnary['platform']
@@ -231,28 +268,42 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
                               OBJCFLAGSString,
                               CPPFLAGSString,
                               ASFLAGSString]
-            # Add extra exports to force configure to assume that we have a working malloc
-            # If not set, configure will fail the malloc test and will use 'rpl_malloc' and 'rpl_realloc'
-            # for libraries which defines the AC_FUNC_MALLOC in their configure.ac
-            # This leads to link issues for programs.
-            forcedMalloc = ARSetEnvIfEmpty('ac_cv_func_malloc_0_nonnull', 'yes')
-            forcedRealloc = ARSetEnvIfEmpty('ac_cv_func_realloc_0_nonnull', 'yes')
-            retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=arch, noSharedObjects=True, inhouse=inhouse)
-            # Remove any added export
-            if forcedMalloc:
-                ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
-            if forcedRealloc:
-                ARUnsetEnv('ac_cv_func_realloc_0_nonnull')
-            if not retStatus:
-                return EndDumpArgs(res=False, **args)
-            # Get the static libs installed
-            liblower = lib.name.lower()
-            newLibs = [ os.path.join(ArchLibDir, l) for l in os.listdir(ArchLibDir) if '.a' in l]
-            if lib.ext:
-                for libToStrip in newLibs:
-                    ARExecute(Strip + ' -S ' + libToStrip, failOnError=False)
-            BuiltLibs.extend(newLibs)
+            
+            block_MakePostProcess = iOS_MakePostProcessCb(lib, BuiltLibs, sslLibs, cryptoLibs, Strip, ArchLibDir)
+            
+            if isMp:
+                poolRes = pool.apply_async(Common_BuildConfigureLibrary,
+                                           args=(target, lib,),
+                                           kwds={'extraArgs':ExtraConfFlags,
+                                                 'clean':clean,
+                                                 'debug':debug,
+                                                 'confdirSuffix':arch,
+                                                 'noSharedObjects':True,
+                                                 'inhouse':inhouse,
+                                                 'bootstrapLock':bLock,
+                                                 'configureLock':cLock,
+                                                 'makeLock':mLock,
+                                                 'isMp':isMp,},
+                                           callback=block_MakePostProcess)
+                poolResults.append(poolRes)
+            else:
+                retStatus = Common_BuildConfigureLibrary(target, lib, extraArgs=ExtraConfFlags, clean=clean, debug=debug, confdirSuffix=arch, noSharedObjects=True, inhouse=inhouse, bootstrapLock=bLock, configureLock=cLock, makeLock=mLock, isMp=False)
+                block_MakePostProcess((retStatus, lib))
 
+        if isMp:
+            for p in poolResults:
+                (p_res, p_updatedlib) = p.get()
+                if not p_res:
+                    retStatus = False
+
+        # Remove any added export
+        if forcedMalloc:
+            ARUnsetEnv('ac_cv_func_malloc_0_nonnull')
+        if forcedRealloc:
+            ARUnsetEnv('ac_cv_func_realloc_0_nonnull')
+        if not retStatus:
+            return EndDumpArgs(res=False, **args)
+        
         res = True
         if not clean:
             # Make fat library
@@ -260,6 +311,12 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             
             libPrefix = 'lib' if not lib.ext else ''
             
+            if (lib.name == 'libressl'):
+                lipoSsl = '%(OutputDir)s/libssl.a' % locals()
+                cryptoSsl = '%(OutputDir)s/libcrypto.a' % locals()
+                ARExecute('lipo ' + ARListAsBashArg(sslLibs) + ' -create -output ' + lipoSsl)
+                ARExecute('lipo ' + ARListAsBashArg(cryptoLibs) + ' -create -output ' + cryptoSsl)
+
             OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s.a' % locals()
             if debug:
                 OutputLibrary = '%(OutputDir)s/%(libPrefix)s%(lib)s_dbg.a' % locals()
@@ -276,7 +333,10 @@ def iOS_BuildLibrary(target, lib, clean=False, debug=False, nodeps=False, inhous
             ARDeleteIfExists(FinalFramework)
             os.makedirs(FinalFramework)
             libIncDirPrefix = 'lib' if not lib.ext else ''
-            shutil.copytree('%(InstallDir)s/include/%(libIncDirPrefix)s%(lib)s' % locals(), FrameworkHeaders)
+            if (lib.name == 'libressl'):
+                shutil.copytree('%(InstallDir)s/include/openssl' % locals(), FrameworkHeaders)
+            else:
+                shutil.copytree('%(InstallDir)s/include/%(libIncDirPrefix)s%(lib)s' % locals(), FrameworkHeaders)
             shutil.copyfile(OutputLibrary, FrameworkLib)
 
     elif iOS_HasXcodeProject(lib):

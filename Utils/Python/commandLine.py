@@ -53,6 +53,7 @@ class CommandLineParser:
         self.doNothing = False
         self.noGit = False
         self.noDeps = False
+        self.multiProcess = False
         self.threads = -1
         self.defaultBaseRepoUrl = defaultBaseRepoUrl
         self.repoBaseUrl = defaultBaseRepoUrl
@@ -82,6 +83,7 @@ class CommandLineParser:
         self.parser.add_argument('--repo-base-url', action="store", help=("Use the following base URL instead of " + defaultBaseRepoUrl))
         self.parser.add_argument('--extra-git-script', action="append", help="Path (relative to ARSDKBuildUtils directory) to an extra script which will be run before updating git repo (with path as its first argument)")
         self.parser.add_argument('--arch', action="append", help="Architectures to be built. May be ignored depending of the target. May fail if an invalid arch name is provided. (Use only if you know what you're doing !)")
+        self.parser.add_argument('--mp', action="store_true", help="Run in multiprocess mode (experimental !)")
 
 
     def parse(self, argv):
@@ -146,6 +148,8 @@ class CommandLineParser:
             self.extraGitScripts = args.extra_git_script[:]
         if args.arch:
             self.archs = args.arch[:]
+        if args.mp:
+            self.multiProcess = True
 
         # Fill default values if needed
         if not self.activeTargets:
@@ -185,6 +189,7 @@ class CommandLineParser:
         ARLog(' - NO GIT         = ' + str(self.noGit))
         ARLog(' - NO DEPS        = ' + str(self.noDeps))
         ARLog(' - NB THREADS     = ' + str(self.threads))
+        ARLog(' - MULTIPROCESS   = ' + str(self.multiProcess))
         ARLog('Active targets : {')
         for tar in self.activeTargets:
             ARLog(' - %(tar)s' % locals())

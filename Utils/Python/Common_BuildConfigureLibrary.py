@@ -32,6 +32,7 @@ from ARFuncs import *
 from Common_CheckBootstrap import *
 from Common_CheckConfigure import *
 from Common_RemoveVersionsFromSo import *
+from multiprocessing import Lock
 
 def Common_GetConfigureDir(lib):
     # Find library configure dir
@@ -71,7 +72,7 @@ def Common_MergeConfigureArgs(args):
             
             
 
-def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=False, inhouse=False, confdirSuffix='', installSubDir='', isLib=True, stripVersionNumber=False, noSharedObjects=False):
+def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=False, inhouse=False, confdirSuffix='', installSubDir='', isLib=True, stripVersionNumber=False, noSharedObjects=False, bootstrapLock=None, configureLock=None, makeLock=None, isMp=False):
     args = dict(locals())
 
     prefix = 'lib' if (isLib and (not lib.name.startswith('lib')) ) else ''
@@ -79,7 +80,7 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
 
     if not target.needsToBuild(lib):
         ARLog('Skipping %(prefix)s%(lib)s build : already built for target %(target)s' % locals())
-        return True
+        return (True, lib) if isMp else True
 
     StartDumpArgs(**args)
 
@@ -88,7 +89,8 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     # Sanity checks
     if not os.path.exists(lib.path):
         ARLog('Unable to build ' + lib.name + ' : directory ' + lib.path + ' does not exists')
-        return EndDumpArgs(res=False, **args)
+        ret = EndDumpArgs(res=False, **args)
+        return (ret, lib) if isMp else ret
 
     # Generate directory names
     TargetDir       = ARPathFromHere('Targets/%(target)s' % locals())
@@ -102,8 +104,8 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
 
     # Generate configure args
     ConfigureArgs = ['--prefix=%(InstallDir)s' % locals()]
-    ConfigureArgs.extend(lib.extraConfFlags)
     ConfigureArgs.extend(extraArgs)
+    ConfigureArgs.extend(lib.extraConfFlags)
 
     # TEMP ALWAYS USE -g !!!
     if not lib.ext:
@@ -132,7 +134,8 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     LibConfigureDir = Common_GetConfigureDir(lib)
     if LibConfigureDir is None:
         ARLog('Don\'t know how to build %(prefix)s%(lib)s for %(target)s' % locals())
-        return EndDumpArgs(res=False, **args)
+        ret = EndDumpArgs(res=False, **args)
+        return (ret, lib) if isMp else ret
     
     # Find library custom script
     if lib.customBuild is not None:        
@@ -141,20 +144,26 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
         ARLog('Custom build %(CustomBuildScript)s' % locals())
         if not os.path.exists(CustomBuildScript):
             ARLog('Failed to customBuild check %(prefix)s%(lib)s' % locals())
-            return EndDumpArgs(res=False, **args)
+            ret = EndDumpArgs(res=False, **args)
+            return (ret, lib) if isMp else ret
 
     # Check bootstrap status of the directory
     if lib.customBuild is None:
-        if not Common_CheckBootstrap(LibConfigureDir) or not os.path.exists('%(LibConfigureDir)s/configure' % locals()):
+        if bootstrapLock is not None:
+            bootstrapLock.acquire()
+        res = Common_CheckBootstrap(LibConfigureDir) or not os.path.exists('%(LibConfigureDir)s/configure' % locals())
+        if bootstrapLock is not None:
+            bootstrapLock.release()
+        if not res:
             ARLog('Failed to bootstrap %(prefix)s%(lib)s' % locals())
-            return EndDumpArgs(res=False, **args)
+            ret = EndDumpArgs(res=False, **args)
+            return (ret, lib) if isMp else ret
 
     # Replace %{ARSDK_INSTALL_DIR}%
     Argn = len(ConfigureArgs)
     index = 0
     while index < Argn:
         arg = ConfigureArgs[index]
-        #print 'ARG ' + arg
         match = re.search('%\{[a-zA-Z_]*\}%', arg)
         if match is not None:
             ConfigureArgs[index] = re.sub('%\{[a-zA-Z_]*\}%', InstallDir, arg)
@@ -163,7 +172,6 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
     index = 0
     while index < Argn:
         arg = ConfigureArgsDbg[index]
-        #print 'ARG ' + arg
         match = re.search('%\{[a-zA-Z_]*\}%', arg)
         if match is not None:
             ConfigureArgsDbg[index] = re.sub('%\{[a-zA-Z_]*\}%', InstallDir, arg)
@@ -176,26 +184,51 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
             CustomBuildArg = ConfigureArgs
             if debug:
                 CustomBuildArg = ConfigureArgsDbg
-            if not ARExecute(CustomBuildScript + ' ' + ARListAsBashArg(CustomBuildArg), failOnError=False):
+            if makeLock is not None:
+                makeLock.acquire()
+            res = ARExecute(CustomBuildScript + ' ' + ARListAsBashArg(CustomBuildArg), failOnError=False)
+            if makeLock is not None:
+                makeLock.release()
+            if not res:
                 ARLog('Failed to build %(prefix)s%(lib)s' % locals())
-                return EndDumpArgs(res=False, **args)
+                ret = EndDumpArgs(res=False, **args)
+                return (ret, lib) if isMp else ret
             else:
-                return EndDumpArgs(res=True, **args)
+                ret = EndDumpArgs(res=True, **args)
+                return (ret, lib) if isMp else ret
         
         if not debug:
             # Check configure(release)
-            if not Common_CheckConfigure(lib, LibConfigureDir, ConfigureDir, ConfigureArgs, lib.confdeps):
-                return EndDumpArgs(res=False, **args)
+            if configureLock is not None:
+                configureLock.acquire()
+            res = Common_CheckConfigure(lib, LibConfigureDir, ConfigureDir, ConfigureArgs, lib.confdeps)
+            if configureLock is not None:
+                configureLock.release()
+            if not res:
+                ret = EndDumpArgs(res=False, **args)
+                return (ret, lib) if isMp else ret
             mdir = Chdir(ConfigureDir)
         else:
-            if not Common_CheckConfigure(lib, LibConfigureDir, ConfigureDirDbg, ConfigureArgsDbg, lib.confdeps):
-                return EndDumpArgs(res=False, **args)
+            if configureLock is not None:
+                configureLock.acquire()
+            res = Common_CheckConfigure(lib, LibConfigureDir, ConfigureDirDbg, ConfigureArgsDbg, lib.confdeps)
+            if configureLock is not None:
+                configureLock.release()
+            if not res:
+                ret = EndDumpArgs(res=False, **args)
+                return (ret, lib) if isMp else ret
             mdir = Chdir(ConfigureDirDbg)
         # Make
-        if not ARExecute(os.environ.get('ARMAKE') + ' install', failOnError=False):
+        if makeLock is not None:
+            makeLock.acquire()
+        res = ARExecute(os.environ.get('ARMAKE') + ' install', failOnError=False)
+        if not res:
+            if makeLock is not None:
+                makeLock.release()
             ARLog('Failed to build %(prefix)s%(lib)s' % locals())
             mdir.exit()
-            return EndDumpArgs(res=False, **args)
+            ret = EndDumpArgs(res=False, **args)
+            return (ret, lib) if isMp else ret
 
         # Strip version number if requested
         if not noSharedObjects:
@@ -214,7 +247,8 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
                     sopath = '%(extLibDir)s/%(soname)s' % locals()
                     if not Common_RemoveVersionsFromSo(sopath, target.soext, lib.soLibs):
                         ARLog('Error while removing versioning informations of %(sopath)s' % locals())
-                        return EndDumpArgs(res=False, **args)
+                        ret = EndDumpArgs(res=False, **args)
+                        return (ret, lib) if isMp else ret
             # Rename lib to _dbg if not already done (ext libraries in debug mode)
             if lib.ext and debug:
                 extLibDir='%(InstallDir)s/lib' % locals()
@@ -225,8 +259,12 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
                         extLibNDbg='%(extLibDir)s/%(soname)s' % locals()
                         ARCopyAndReplaceFile(extLibNDbg, extLibDbg)
         mdir.exit()
+        if makeLock is not None:
+            makeLock.release()
 
     else:
+        if makeLock is not None:
+            makeLock.acquire()
         if os.path.exists ('%(ConfigureDirDbg)s/Makefile' % locals()):
             cdir = Chdir(ConfigureDirDbg)
             ARExecute(os.environ.get('ARMAKE') + ' uninstall')
@@ -237,6 +275,9 @@ def Common_BuildConfigureLibrary(target, lib, extraArgs=[], clean=False, debug=F
             ARExecute(os.environ.get('ARMAKE') + ' uninstall')
             ARExecute(os.environ.get('ARMAKE') + ' clean')
             cdir.exit ()
+        if makeLock is not None:
+            makeLock.release()
             
 
-    return EndDumpArgs(res=True, **args)
+    ret = EndDumpArgs(res=True, **args)
+    return (ret, lib) if isMp else ret

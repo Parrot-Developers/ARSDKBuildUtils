@@ -77,12 +77,12 @@
 
 <libraries>
   
-  <extlib name="openssl" path="../openssl/openssl-OpenSSL_1_0_2c" customBuild="../ARSDKBuildUtils/ConfigureWrapper/openssl/customBuild">
+  <extlib name="libressl" path="../libressl/libressl-2.2.1">
+    <extraConfigureFlag value="--enable-static"/>
+    <extraConfigureFlag value="--disable-shared"/>
   </extlib>
 
-  <lib name="ARSAL">
-    <dep name="openssl"/>
-  </lib>
+  <lib name="ARSAL"/>
   
   <lib name="ARNetworkAL">
     <dep name="ARSAL"/>
@@ -107,13 +107,11 @@
 
   <lib name="ARCommands">
     <dep name="ARSAL"/>
-    <configureDepFile name="Xml/generateLibARCommands.py"/>
-    <configureDepFile name="Xml/*.xml"/>
-    <extraConfigureFlag value="--enable-debug-commands"/>
   </lib>
 
   <lib name="ARStream">
     <dep name="ARNetwork"/>
+	<extraConfigureFlag value="LDFLAGS=-lm"/>
   </lib>
 
   <lib name="ARMavlink">
@@ -122,7 +120,7 @@
   </lib>
   
   <extlib name="curl" path="../curl">
-    <dep name="openssl"/>
+    <dep name="libressl"/>
       
     <extraConfigureFlag value="--disable-ares"/>
     <extraConfigureFlag value="--disable-file"/>
@@ -200,9 +198,6 @@
     <dep name="ARStream"/>
     <dep name="json"/>
     <prebuiltdep name="uthash"/>
-    <configureDepFile name="Python/*.py"/>
-    <configureDepFile name="Xml/*.xml"/>
-    <configureDepFile name="../libARCommands/Xml/*.xml"/>
 </lib>
 
 </libraries>
