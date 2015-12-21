@@ -189,6 +189,10 @@
     <prebuiltdep name="sanselan-0.97-incubator"/>
   </lib>
   
+  <lib name="ARStream2">
+       <dep name="ARSAL"/>
+  </lib>
+  
   <lib name="ARController">
     <dep name="ARSAL"/>
     <dep name="ARDiscovery"/>
@@ -196,6 +200,7 @@
     <dep name="ARNetwork"/>
     <dep name="ARCommands"/>
     <dep name="ARStream"/>
+    <dep name="ARStream2"/>
     <dep name="json"/>
     <prebuiltdep name="uthash"/>
 </lib>
