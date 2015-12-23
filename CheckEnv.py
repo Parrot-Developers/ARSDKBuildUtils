@@ -42,6 +42,17 @@ from ARFuncs import *
 import xmlreader
 import tempfile
 
+#This is a message to announce the new build system
+ARPrint ('\n\nThis script is deprecated and doesn\'t work anymore.\n')
+ARPrint ('Please download repo (http://source.android.com/source/downloading.html#installing-repo).')
+ARPrint ('Then run \'repo init -u https://github.com/Parrot-Developers/arsdk_manifests.git\' in an empty folder.')
+ARPrint ('Then run \'repo sync\' to get all sources.')
+ARPrint ('After that, you\'ll be able to run \'./build.sh\' to build the SDK.')
+ARPrint ('\n\nYou can find a full documentation here: http://developer.parrot.com/docs/bebop/#go-deeper\n\n')
+exit(0)
+# After that comment, this is the old build. Left here in memory of the old time we spent building the SDK with it. RIP
+
+
 uname = ARExecuteGetStdout(["uname"], printErrorMessage=False).lower()
 
 
