@@ -240,8 +240,9 @@ class ARCommandTimeoutPolicy:
 
 class ARCommand:
     "Represent a command"
-    def __init__(self, cmdName):
+    def __init__(self, cmdName, ident):
         self.name     = cmdName
+        self.ident    = ident
         self.comments = []
         self.args     = []
         self.buf      = ARCommandBuffer.ACK
@@ -391,13 +392,20 @@ def parseXml(fileName, projectName, previousProjects):
                 currentClass.addCommentLine(stripName)
         commands = cmdclass.getElementsByTagName ('cmd')
         for command in commands:
-            # Get command name
-            currentCommand = ARCommand(command.attributes["name"].nodeValue)
-            # Check if command name is unique
+            # Get command name / id
+            currentCommand = ARCommand(command.attributes["name"].nodeValue, command.attributes["id"].nodeValue)
+            # Check if command is unique
             for cmd in currentClass.cmds:
+                # Check if command name is unique
                 if cmd.name == currentCommand.name:
                     ARPrint ('Command `' + cmd.name + '` appears multiple times in `' + proj.name + '.' + currentClass.name + '` !')
                     ARPrint (' --> Commands must have unique names in a given class (but can exist in multiple classes)')
+                    EXIT (1)
+                    
+                # Check if command id is unique
+                if cmd.ident == currentCommand.ident:
+                    ARPrint ('Command id:`' + cmd.ident + '` appears multiple times in `' + proj.name + '.' + currentClass.name + '` !')
+                    ARPrint (' --> Commands must have unique id in a given class (but can exist in multiple classes)')
                     EXIT (1)
 
             # Try to get the suggested buffer type for the command
