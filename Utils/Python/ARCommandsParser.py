@@ -107,10 +107,19 @@ def ARFlagValue (Module, Submodule, Enum, Name):
 def ARJavaEnumType (Module, Submodule, Enum):
     # MODULE_SUBMODULE_ENUM_"ENUM"
     return Module.upper () + '_' + Submodule.upper () + '_' + Enum.upper () + '_ENUM'
+    
+def ARJavaEnumValDef (Module, Submodule, Enum, Name, oldFormat=False):
+    # MODULE_SUBMODULE_ENUM_NAME
+    if oldFormat:
+        return AREnumValue (Module, Submodule, Enum, Name)
+    elif Name[0].isdigit():
+        return Enum.upper() + '_' + Name.upper ()
+    else:
+        return Name.upper ()
 
-def ARJavaEnumValue (Module, Submodule, Enum, Name):
+def ARJavaEnumValue (Module, Submodule, Enum, Name, oldFormat=False):
     # MODULE_SUBMODULE_ENUM_"ENUM".MODULE_SUBMODULE_ENUM_NAME
-    return ARJavaEnumType (Module, Submodule, Enum) + '.' + AREnumValue (Module, Submodule, Enum, Name)
+    return ARJavaEnumType (Module, Submodule, Enum) + '.' + ARJavaEnumValDef (Module, Submodule, Enum, Name, oldFormat)
 
 #
 # Global "Has arg of type" array
