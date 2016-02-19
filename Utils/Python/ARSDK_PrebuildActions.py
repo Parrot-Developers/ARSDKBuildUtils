@@ -320,7 +320,6 @@ def writeToStringFunction(enumType, libName):
         cfile.write('        return "' + entry.comment + '";\n')
         cfile.write('        break;\n')
     cfile.write('    default:\n')
-    cfile.write('        return "Unknown value";\n')
     cfile.write('        break;\n')
     cfile.write('    }\n')
     cfile.write('    return "Unknown value";\n')
