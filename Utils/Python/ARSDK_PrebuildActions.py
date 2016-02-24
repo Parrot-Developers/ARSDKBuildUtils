@@ -70,26 +70,7 @@ GENERATED_FILE_DISCLAIMER='''/*
  */
 '''
 
-#################################
-# Internal functions            #
-#################################
-
-def ARPrint(msg, noNewLine=0):
-    sys.stdout.write(msg)
-    if 0 == noNewLine:
-        sys.stdout.write('\n')
-    else:
-        sys.stdout.write(' ')
-
-def ARCapitalize(arstr):
-    return arstr[0].upper() + arstr[1:]
-
-def ARStringIsInteger(arstr):
-    try:
-        int(arstr)
-        return True
-    except ValueError:
-        return False
+from ARFuncs import *
 
 #################################
 # Add Prebuild processing here  #
