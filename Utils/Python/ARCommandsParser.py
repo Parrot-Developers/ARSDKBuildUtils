@@ -879,7 +879,7 @@ def parseFeatureXml(fileName, featureName, previousFeatures, genericFtr=None):
         # get comment of command
         comment = msg.getElementsByTagName ('comment')
         if len (comment) != 1:
-            ARPrint (ftr_msg.strType() + ' ' + ftr.name + '.' + msg.name + ' should contain maximally ONE comment tag.')
+            ARPrint (currentMessage.name + ' should contain maximally ONE comment tag.')
             EXIT (1)
         comment = comment[0]
         currentComment = ARComment(comment.attributes["title"].nodeValue)
