@@ -342,3 +342,86 @@ def ARReplaceFileIfDifferent(oldFile, newFile):
         os.rename(newFile, oldFile)
     else:
         ARDeleteIfExists(newFile)
+
+def ARCapitalize (arstr):
+    nameParts = arstr.split('_')
+    name = ''
+    for part in nameParts:
+        if len(part) > 1:
+            name =  name + part[0].upper() + part[1:]
+        elif len(part) == 1:
+            name = name + part[0].upper()
+    return name
+
+def ARUncapitalize (arstr):
+    if len(arstr) > 1:
+        return arstr[0].lower() + arstr[1:]
+    elif len(arstr) == 1:
+        return arstr[0].lower()
+    else:
+        return ''
+
+def ARStringIsInteger(arstr):
+    try:
+        int(arstr)
+        return True
+    except ValueError:
+        return False
+
+#
+# Name generation functions
+#
+
+def ARMacroName (Module, Submodule, Name):
+    # MODULE_SUBMODULE_NAME
+    return Module.upper () + '_' + Submodule.upper () + '_' + Name.upper ()
+
+def ARFunctionName (Module, Submodule, Name):
+    # MODULE_Submodule_Name
+    return Module.upper () + '_' + ARCapitalize (Submodule) + '_' + ARCapitalize (Name)
+
+def ARTypeName (Module, Submodule, Name):
+    # MODULE_Submodule[_Name]_t
+    if '' != Name:
+        return Module.upper () + '_' + ARCapitalize (Submodule) + '_' + ARCapitalize (Name) + '_t'
+    else:
+        return Module.upper () + '_' + ARCapitalize (Submodule) + '_t'
+
+def ARGlobalName (Module, Submodule, Name):
+    # MODULE_Submodule_Name
+    return Module.upper () + '_' + ARCapitalize (Submodule) + '_' + ARCapitalize (Name)
+
+def ARGlobalConstName (Module, Submodule, Name):
+    # cMODULE_Submodule_Name
+    return 'c' + Module.upper () + '_' + ARCapitalize (Submodule) + '_' + ARCapitalize (Name)
+
+def AREnumValue (Module, Submodule, Enum, Name):
+    # MODULE_SUBMODULE_ENUM_NAME
+    if Enum.upper () == 'ERROR' and (Name.upper () == 'OK' or Name.upper () == 'ERROR'):
+        return Module.upper () + '_' + Submodule.upper () + '_' + Name.upper ()
+    else:
+        return Module.upper () + '_' + Submodule.upper () + '_' + Enum.upper () + '_' + Name.upper ()
+
+def AREnumName (Module, Submodule, Enum):
+    # eMODULE_SUBMODULE_ENUM
+    return 'e' + Module.upper () + '_' + Submodule.upper () + '_' + Enum.upper ()
+
+def ARFlagValue (Module, Submodule, Enum, Name):
+    return Module.upper () + '_FLAG_' + Submodule.upper () + '_' + Enum.upper () + '_' + Name.upper ()
+    
+def ARJavaEnumType (Module, Submodule, Enum):
+    # MODULE_SUBMODULE_ENUM_"ENUM"
+    return Module.upper () + '_' + Submodule.upper () + '_' + Enum.upper () + '_ENUM'
+    
+def ARJavaEnumValDef (Module, Submodule, Enum, Name, oldFormat=False):
+    # MODULE_SUBMODULE_ENUM_NAME
+    if oldFormat:
+        return AREnumValue (Module, Submodule, Enum, Name)
+    elif Name[0].isdigit():
+        return Enum.upper() + '_' + Name.upper ()
+    else:
+        return Name.upper ()
+
+def ARJavaEnumValue (Module, Submodule, Enum, Name, oldFormat=False):
+    # MODULE_SUBMODULE_ENUM_"ENUM".MODULE_SUBMODULE_ENUM_NAME
+    return ARJavaEnumType (Module, Submodule, Enum) + '.' + ARJavaEnumValDef (Module, Submodule, Enum, Name, oldFormat)
