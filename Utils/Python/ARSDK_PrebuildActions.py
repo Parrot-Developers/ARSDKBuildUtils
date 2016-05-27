@@ -317,7 +317,7 @@ def writeToStringFunction(enumType, libName):
 # Generic infos about the lib   #
 #################################
 
-def generateFiles(topDir, libName, outdir):
+def generateFiles(topDir, libName, outdir, options):
     # Directories
     INPUT_DIR = topDir + '/Includes/' + libName + '/'
 
@@ -344,8 +344,10 @@ def generateFiles(topDir, libName, outdir):
             completeFile = INPUT_DIR + fname
             allEnums = readEnumEntriesFromFile(completeFile, INPUT_DIR, OUTPUT_DIR)
             for enumType in allEnums:
-                writeEnumToJavaFile(enumType, JAVA_OUT_DIR, JAVA_PACKAGE)
-                writeToStringFunction(enumType, libName)
+                if not options.java_disabled:
+                    writeEnumToJavaFile(enumType, JAVA_OUT_DIR, JAVA_PACKAGE)
+                if not options.tostr_disabled:
+                    writeToStringFunction(enumType, libName)
 
 def main():
     parser = OptionParser()
@@ -358,6 +360,14 @@ def main():
     parser.add_option("-o", "--outdir", dest="outdir",
                       default='',
                       help="output directory")
+    parser.add_option("--disable-java", dest="java_disabled",
+                      action="store_true",
+                      default=False,
+                      help="disable Java generation")
+    parser.add_option("--disable-tostr", dest="tostr_disabled",
+                      action="store_true",
+                      default=False,
+                      help="disable toString generation")
     (options, args) = parser.parse_args()
     if (options.root == '') and (options.lib == ''):
         confDir=sys.argv[1]
@@ -378,8 +388,8 @@ def main():
         libName=options.lib
         topDir=options.root
         outdir = options.outdir if options.outdir else topDir + '/gen'
-    generateFiles(topDir, libName, outdir)
-    generateFiles(outdir, libName, outdir)
+    generateFiles(topDir, libName, outdir, options)
+    generateFiles(outdir, libName, outdir, options)
 
 if __name__ == '__main__':
     main()
