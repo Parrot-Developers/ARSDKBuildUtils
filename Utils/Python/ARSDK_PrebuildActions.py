@@ -317,7 +317,7 @@ def writeToStringFunction(enumType, libName):
 # Generic infos about the lib   #
 #################################
 
-def generateFiles(topDir, libName):
+def generateFiles(topDir, libName, outdir, options):
     # Directories
     INPUT_DIR = topDir + '/Includes/' + libName + '/'
 
@@ -326,12 +326,10 @@ def generateFiles(topDir, libName):
     JAVA_PACKAGE = 'com.parrot.arsdk.' + LIB_MODULE.lower()
     JAVA_PACKAGE_DIR = JAVA_PACKAGE.replace('.', '/')
 
-    if topDir.endswith('/gen'):
-        OUTPUT_DIR = topDir + '/Sources/'
-        JAVA_OUT_DIR = topDir + '/JNI/java/' + JAVA_PACKAGE_DIR + '/'
-    else:
-        OUTPUT_DIR = topDir + '/gen/Sources/'
-        JAVA_OUT_DIR = topDir + '/gen/JNI/java/' + JAVA_PACKAGE_DIR + '/'
+
+    OUTPUT_DIR = outdir + '/Sources/'
+    JAVA_OUT_DIR = outdir + '/JNI/java/' + JAVA_PACKAGE_DIR + '/'
+
 
     # Create dir if neededif not os.path.exists(OUTPUT_DIR):
     if not os.path.exists(OUTPUT_DIR):
@@ -346,8 +344,10 @@ def generateFiles(topDir, libName):
             completeFile = INPUT_DIR + fname
             allEnums = readEnumEntriesFromFile(completeFile, INPUT_DIR, OUTPUT_DIR)
             for enumType in allEnums:
-                writeEnumToJavaFile(enumType, JAVA_OUT_DIR, JAVA_PACKAGE)
-                writeToStringFunction(enumType, libName)
+                if not options.java_disabled:
+                    writeEnumToJavaFile(enumType, JAVA_OUT_DIR, JAVA_PACKAGE)
+                if not options.tostr_disabled:
+                    writeToStringFunction(enumType, libName)
 
 def main():
     parser = OptionParser()
@@ -357,6 +357,17 @@ def main():
     parser.add_option("-l", "--lib", dest="lib",
                       default='',
                       help="libAR* library name")
+    parser.add_option("-o", "--outdir", dest="outdir",
+                      default='',
+                      help="output directory")
+    parser.add_option("--disable-java", dest="java_disabled",
+                      action="store_true",
+                      default=False,
+                      help="disable Java generation")
+    parser.add_option("--disable-tostr", dest="tostr_disabled",
+                      action="store_true",
+                      default=False,
+                      help="disable toString generation")
     (options, args) = parser.parse_args()
     if (options.root == '') and (options.lib == ''):
         confDir=sys.argv[1]
@@ -376,8 +387,9 @@ def main():
     else:
         libName=options.lib
         topDir=options.root
-    generateFiles(topDir, libName)
-    generateFiles(topDir + '/gen', libName)
+        outdir = options.outdir if options.outdir else topDir + '/gen'
+    generateFiles(topDir, libName, outdir, options)
+    generateFiles(outdir, libName, outdir, options)
 
 if __name__ == '__main__':
     main()
