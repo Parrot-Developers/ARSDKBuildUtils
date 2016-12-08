@@ -412,7 +412,11 @@ def ARFlagValue (Module, Submodule, Enum, Name):
 def ARJavaEnumType (Module, Submodule, Enum):
     # MODULE_SUBMODULE_ENUM_"ENUM"
     return Module.upper () + '_' + Submodule.upper () + '_' + Enum.upper () + '_ENUM'
-    
+
+def ARJavaMultiSetType (Module, Submodule, multiset):
+    # ModuleSubmoduleName
+    return Module+ ARCapitalize (Submodule) + ARCapitalize (multiset)
+
 def ARJavaEnumValDef (Module, Submodule, Enum, Name, oldFormat=False):
     # MODULE_SUBMODULE_ENUM_NAME
     if oldFormat:
